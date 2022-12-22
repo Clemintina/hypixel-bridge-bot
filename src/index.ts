@@ -98,7 +98,7 @@ class MinecraftBot {
             const resolvePath = path.join(commandsPath, file);
             const defaultImport = (await import(resolvePath)).default;
             const command = new defaultImport(this.bot);
-            this.commandMap.set(command.getName(), command);
+            this.commandMap.set(`${process.env?.BOT_PREFIX ?? '!'}${command.getName()}`, command);
         }
 
         await this.startBot();
