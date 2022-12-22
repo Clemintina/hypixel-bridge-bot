@@ -1,6 +1,6 @@
 import { BotOptions, createBot } from "mineflayer";
 import { SocksClient } from "socks";
-import { Client as Discord, EmbedBuilder, IntentsBitField, Message } from "discord.js";
+import { Client as Discord, EmbedBuilder, IntentsBitField, Message, REST, Routes, SlashCommandBuilder } from "discord.js";
 import dotenv from "dotenv";
 import path from "path";
 import { readdirSync } from "fs";
@@ -80,6 +80,23 @@ class MinecraftBot {
 
         if (process.env.DISCORD_TOKEN) {
             this.discord.login(process.env.DISCORD_TOKEN);
+            const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
+
+            const commands = [
+                new SlashCommandBuilder()
+                    .setName("kick")
+                    .setDescription("Kicks a player from the guild")
+                    .addStringOption((options) => {
+                        options.setName("player_name").setDescription("The name of the player to kick.").setRequired(true);
+                        return options;
+                    })
+                    .addStringOption((options) => {
+                        options.setName("reason").setDescription("Reason to kick the player").setRequired(true);
+                        return options;
+                    }),
+            ];
+
+            rest.put(Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID!, process.env.DISCORD_GUILD_ID!), { body: commands }).then(() => console.log("PUT discord commands"));
         } else {
             console.log("No discord token in .env file, Not logging to discord!");
         }
@@ -104,6 +121,10 @@ class MinecraftBot {
             this.bot.chat("/api new");
             await this.bot.waitForTicks(40);
             this.bot.chat("/chat g");
+            // Force Limbo
+            for (let i = 0; i < 20; i++) {
+                this.bot.chat("/limvo");
+            }
         });
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -134,7 +155,7 @@ class MinecraftBot {
         this.bot.on("message", (msg) => {
             const message = msg.toString();
             const ansiMessage = msg.toAnsi();
-            // console.log(ansiMessage);
+            console.log(ansiMessage);
             if (message.includes("Guild >")) console.log(ansiMessage);
 
             if (message.includes("Your new API key is")) {
@@ -145,8 +166,26 @@ class MinecraftBot {
         });
 
         this.discord.on("messageCreate", async (message) => {
-            if (message.channel.id == process.env.DISCORD_LOGGING_CHANNEL && !message.author.bot && message.author.id != this.discord?.user?.id) {
+            const { bot, id } = message.author;
+            if (message.channel.id == process.env.DISCORD_LOGGING_CHANNEL && !bot && id != this.discord?.user?.id) {
                 this.sendToHypixel(message);
+            }
+        });
+        this.discord.on("interactionCreate", async (interaction) => {
+            if (interaction.member && interaction.isCommand()) {
+                const guild = this.discord.guilds.cache.get(process.env.DISCORD_GUILD_ID!);
+                if (guild) {
+                    const member = await guild.members.cache.get(interaction.user.id);
+                    if (member && member.roles.cache.has(process.env.DISCORD_ADMIN_ROLE!)) {
+                        await interaction.deferReply({ fetchReply: true });
+                        if (interaction.commandName == "kick") {
+                            await this.bot.chat(`/g kick ${interaction.options.get("username")?.value} ${interaction.options.get("reason")?.value}`);
+                            await interaction.editReply("Command has been executed!");
+                        }
+                    } else {
+                        await interaction.reply(`You don't have the required permissions to execute this command!`);
+                    }
+                }
             }
         });
     };

@@ -13,6 +13,8 @@ declare global {
             DISCORD_TOKEN: string;
             DISCORD_LOGGING_CHANNEL: string;
             DISCORD_GUILD_ID: string;
+            DISCORD_CLIENT_ID: string;
+            DISCORD_ADMIN_ROLE: string;
         }
     }
 }
