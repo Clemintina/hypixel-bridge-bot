@@ -3,7 +3,7 @@ declare global {
         interface ProcessEnv {
             MINECRAFT_EMAIL: string;
 
-            BOT_PREFIX:string
+            BOT_PREFIX: string;
 
             PROXY_IP: string;
             PROXY_PORT: string;

@@ -85,12 +85,12 @@ class MinecraftBot {
                     this.sendToHypixel(message);
                 }
             });
-        }else {
-            console.log('No discord token in .env file, Not logging to discord!');
+        } else {
+            console.log("No discord token in .env file, Not logging to discord!");
         }
     }
 
-    public start= async () =>{
+    public start = async () => {
         const commandsPath = path.join(__dirname, "commands");
         const files = readdirSync(commandsPath).filter((f) => f.endsWith(".js") || f.endsWith(".ts"));
 
@@ -98,13 +98,13 @@ class MinecraftBot {
             const resolvePath = path.join(commandsPath, file);
             const defaultImport = (await import(resolvePath)).default;
             const command = new defaultImport(this.bot);
-            this.commandMap.set(`${process.env?.BOT_PREFIX ?? '!'}${command.getName()}`, command);
+            this.commandMap.set(`${process.env?.BOT_PREFIX ?? "!"}${command.getName()}`, command);
         }
 
         await this.startBot();
-    }
+    };
 
-    public  startBot = ()=> {
+    public startBot = () => {
         this.bot.on("spawn", async () => {
             this.bot.chat("/api new");
             await this.bot.waitForTicks(40);
@@ -113,15 +113,15 @@ class MinecraftBot {
 
         // @ts-ignore
         this.bot.on("chat:guild", async ([[msg]]) => {
-            if ( !msg.includes(':') ){
+            if (!msg.includes(":")) {
                 this.formatDiscordMessage(msg);
                 return;
             }
             const player = msg.split(":")[0] as string;
             const message = msg.split(": ")[1] as string;
             const splitMessage = message.split(" ");
-            const commandName = splitMessage[0]
-            const params = splitMessage.slice(1, splitMessage.length)
+            const commandName = splitMessage[0];
+            const params = splitMessage.slice(1, splitMessage.length);
 
             if (this.commandMap.has(commandName)) {
                 const commandInstance = this.commandMap.get(commandName);
@@ -147,24 +147,24 @@ class MinecraftBot {
                 console.log("Key set, bot is ready!");
             }
         });
-    }
+    };
 
-    public  sendToDiscord= async (message: string | EmbedBuilder) => {
+    public sendToDiscord = async (message: string | EmbedBuilder) => {
         const channel = await this.discord.channels.cache.get(process.env.DISCORD_LOGGING_CHANNEL ?? "");
         if (channel?.isTextBased()) {
             if (typeof message == "string") {
                 await channel.send({ content: `:hypixel: ${message}` });
             } else {
-                await channel.send({ embeds: [message]})
+                await channel.send({ embeds: [message] });
             }
         }
-    }
+    };
 
     private sendToHypixel = (message: Message) => {
         this.bot.chat(`${message.author.username}> ${message.content} `);
-    }
+    };
 
-    private formatDiscordMessage = async (message: string)=>{
+    private formatDiscordMessage = async (message: string) => {
         const splitMessage = message.split(" ");
         if (message.includes("joined.")) {
             const discordEmbed = new EmbedBuilder().setDescription(`${splitMessage[0]} Joined! `);
@@ -173,7 +173,7 @@ class MinecraftBot {
             const discordEmbed = new EmbedBuilder().setDescription(`${splitMessage[0]} left! `);
             this.sendToDiscord(discordEmbed);
         }
-    }
+    };
 }
 
 new MinecraftBot().start();

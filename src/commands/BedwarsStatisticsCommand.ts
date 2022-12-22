@@ -1,7 +1,6 @@
 import { CommandBase, CommandExecute } from "../util/CommandHandler";
 import { formatRatio, getPlayerUuid, sanatiseMessage, useHypixelApi } from "../util/CommonUtils";
-import { Client, getPlayerRank } from "@zikeji/hypixel";
-import { getAppConfig } from "../index";
+import { getPlayerRank } from "@zikeji/hypixel";
 import { Bot } from "mineflayer";
 
 class BedwarsStatisticsCommand extends CommandBase {
@@ -10,7 +9,7 @@ class BedwarsStatisticsCommand extends CommandBase {
     }
 
     public execute = async ({ player, message, params }: CommandExecute) => {
-        useHypixelApi(this.getBotInstance(), async (hypixelClient)=>{
+        useHypixelApi(this.getBotInstance(), async (hypixelClient) => {
             const cleanPlayerName = sanatiseMessage(player).trim();
 
             const playerUuid = await getPlayerUuid(params.length == 0 ? cleanPlayerName : params[0].trim());
@@ -27,7 +26,7 @@ class BedwarsStatisticsCommand extends CommandBase {
             } else {
                 this.getBotInstance().chat(`/gc The player ${cleanPlayerName} is invalid!`);
             }
-        })
+        });
     };
 }
 
