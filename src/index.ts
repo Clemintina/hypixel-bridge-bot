@@ -1,6 +1,6 @@
 import { BotOptions, createBot } from "mineflayer";
 import { SocksClient } from "socks";
-import { Client as Discord, IntentsBitField, Message } from "discord.js";
+import { Client as Discord, EmbedBuilder, IntentsBitField, Message } from "discord.js";
 import dotenv from "dotenv";
 import path from "path";
 import { readdirSync } from "fs";
@@ -85,10 +85,12 @@ class MinecraftBot {
                     this.sendToHypixel(message);
                 }
             });
+        }else {
+            console.log('No discord token in .env file, Not logging to discord!');
         }
     }
 
-    public async start() {
+    public start= async () =>{
         const commandsPath = path.join(__dirname, "commands");
         const files = readdirSync(commandsPath).filter((f) => f.endsWith(".js") || f.endsWith(".ts"));
 
@@ -101,7 +103,7 @@ class MinecraftBot {
         await this.startBot();
     }
 
-    public async startBot() {
+    public  startBot = ()=> {
         this.bot.on("spawn", async () => {
             this.bot.chat("/api new");
             await this.bot.waitForTicks(40);
@@ -110,10 +112,15 @@ class MinecraftBot {
 
         // @ts-ignore
         this.bot.on("chat:guild", async ([[msg]]) => {
+            if ( !msg.includes(':') ){
+                this.formatDiscordMessage(msg);
+                return;
+            }
             const player = msg.split(":")[0] as string;
             const message = msg.split(": ")[1] as string;
-            const commandName = message.split(" ")[0];
-            const params = message.split(" ").slice(1, message.split(" ").length);
+            const splitMessage = message.split(" ");
+            const commandName = splitMessage[0]
+            const params = splitMessage.slice(1, splitMessage.length)
 
             if (this.commandMap.has(commandName)) {
                 const commandInstance = this.commandMap.get(commandName);
@@ -141,15 +148,30 @@ class MinecraftBot {
         });
     }
 
-    public async sendToDiscord(message: string) {
+    public  sendToDiscord= async (message: string | EmbedBuilder) => {
         const channel = await this.discord.channels.cache.get(process.env.DISCORD_LOGGING_CHANNEL ?? "");
         if (channel?.isTextBased()) {
-            await channel.send({ content: `:hypixel: ${message}` });
+            if (typeof message == "string") {
+                await channel.send({ content: `:hypixel: ${message}` });
+            } else {
+                await channel.send({ embeds: [message]})
+            }
         }
     }
 
-    private sendToHypixel(message: Message) {
-        this.bot.chat(`${message.author.username}: ${message.content} `);
+    private sendToHypixel = (message: Message) => {
+        this.bot.chat(`${message.author.username}> ${message.content} `);
+    }
+
+    private formatDiscordMessage = async (message: string)=>{
+        const splitMessage = message.split(" ");
+        if (message.includes("joined.")) {
+            const discordEmbed = new EmbedBuilder().setDescription(`${splitMessage[0]} Joined! `);
+            this.sendToDiscord(discordEmbed);
+        } else if (message.includes("left")) {
+            const discordEmbed = new EmbedBuilder().setDescription(`${splitMessage[0]} left! `);
+            this.sendToDiscord(discordEmbed);
+        }
     }
 }
 
