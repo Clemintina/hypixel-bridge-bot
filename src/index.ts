@@ -100,6 +100,7 @@ class MinecraftBot {
             const command = new defaultImport(this.bot);
             this.commandMap.set(command.getName(), command);
         }
+
         await this.startBot();
     }
 
