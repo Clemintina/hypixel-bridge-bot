@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { Client, InvalidKeyError } from "@zikeji/hypixel";
 import { getAppConfig } from "../index";
 import { Bot } from "mineflayer";
@@ -28,15 +28,17 @@ export const sanatiseMessage = (message: string) => {
     return message.replace(RANK_REGEX, "");
 };
 
-export const useHypixelApi = ( botInstance: Bot,apiCaller: (hypixelClient:Client) => void ) => {
+export const useHypixelApi = async ( botInstance: Bot,apiCaller:  (hypixelClient:Client) => Promise<void> ) => {
     try {
         const hypixelClient = new Client(getAppConfig().hypixelApiKey);
-        apiCaller(hypixelClient);
+        return  await apiCaller(hypixelClient)
     } catch ( exceptionThrown ){
         if (exceptionThrown instanceof InvalidKeyError) {
             botInstance.chat("Invalid API Key, Generating...");
-            botInstance.waitForTicks(40)
+            await botInstance.waitForTicks(40);
             botInstance.chat("/api new");
+        } else if (exceptionThrown instanceof AxiosError) {
+            botInstance.chat("This player is invalid!  Maybe you typed their name incorrectly.");
         }
     }
 };
