@@ -8,7 +8,7 @@ class DuelsStatisticsCommand extends CommandBase {
         super({ name: "duels", description: "Shows a player's Duels stats", minecraftBot });
     }
 
-    public execute = async ({ player, message, params }: CommandExecute) => {
+    public execute = async ({ player, params }: CommandExecute) => {
         useHypixelApi(this.getBotInstance(), async (hypixelClient) => {
             const cleanPlayerName = sanatiseMessage(player).trim();
 

@@ -8,7 +8,7 @@ class BedwarsStatisticsCommand extends CommandBase {
         super({ name: "bw", description: "Shows a player's Bedwars stats", minecraftBot });
     }
 
-    public execute = async ({ player, message, params }: CommandExecute) => {
+    public execute = async ({ player, params }: CommandExecute) => {
         useHypixelApi(this.getBotInstance(), async (hypixelClient) => {
             const cleanPlayerName = sanatiseMessage(player).trim();
 
