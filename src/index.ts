@@ -80,11 +80,6 @@ class MinecraftBot {
 
         if (process.env.DISCORD_TOKEN) {
             this.discord.login(process.env.DISCORD_TOKEN);
-            this.discord.on("messageCreate", async (message) => {
-                if (message.channel.id == process.env.DISCORD_LOGGING_CHANNEL && !message.author.bot && message.author.id != this.discord?.user?.id) {
-                    this.sendToHypixel(message);
-                }
-            });
         } else {
             console.log("No discord token in .env file, Not logging to discord!");
         }
@@ -111,6 +106,7 @@ class MinecraftBot {
             this.bot.chat("/chat g");
         });
 
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         this.bot.on("chat:guild", async ([[msg]]) => {
             if (!msg.includes(":")) {
@@ -145,6 +141,12 @@ class MinecraftBot {
                 this.key = message.replace("Your new API key is", "").trim();
                 setAppConfig({ ...appConfig, hypixelApiKey: this.key });
                 console.log("Key set, bot is ready!");
+            }
+        });
+
+        this.discord.on("messageCreate", async (message) => {
+            if (message.channel.id == process.env.DISCORD_LOGGING_CHANNEL && !message.author.bot && message.author.id != this.discord?.user?.id) {
+                this.sendToHypixel(message);
             }
         });
     };
