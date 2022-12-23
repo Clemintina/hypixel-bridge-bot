@@ -1,5 +1,6 @@
 // This file is JSON5 not JSON ( although JSON is valid in this file ), This is a lot less strict and makes it feel more like Javascript objects.
 // This should be easier to use for the end user as I can document it with comments like this!
+// This file should only be used for cosmetic changes and variables which are not related directly to the Discord websocket or Hypixel bot
 
 {
 	// Discord channel emojis. You can generate the codes needed by doing \:emoji: in discord.
