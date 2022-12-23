@@ -24,8 +24,8 @@ export const formatRatio = (num1: number, num2: number) => {
     return displayValue.toString();
 };
 
-export const sanatiseMessage = (message: string) => {
-    return message.replace(RANK_REGEX, "");
+export const sanatiseMessage = (message: string, customWord?: string) => {
+    return message.replace(RANK_REGEX, customWord ?? "");
 };
 
 export const useHypixelApi = async (botInstance: Bot, apiCaller: (hypixelClient: Client) => Promise<void>) => {
