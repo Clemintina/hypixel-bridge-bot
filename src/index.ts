@@ -7,6 +7,9 @@ import { readdirSync } from "fs";
 import { CommandBase } from "./util/CommandHandler";
 import { sanatiseMessage } from "./util/CommonUtils";
 
+import "json5/lib/register";
+const config = require("../config.json5");
+
 dotenv.config();
 
 type AppConfig = {
@@ -155,8 +158,13 @@ class MinecraftBot {
         this.bot.on("message", (msg) => {
             const message = msg.toString();
             const ansiMessage = msg.toAnsi();
-            console.log(ansiMessage);
             if (message.includes("Guild >")) console.log(ansiMessage);
+
+            if (!message.includes(":")) {
+                // Hypixel Server messages, this is all we need xd
+                console.log(ansiMessage);
+                this.formatDiscordMessage(message);
+            }
 
             if (message.includes("Your new API key is")) {
                 this.key = message.replace("Your new API key is", "").trim();
@@ -171,15 +179,16 @@ class MinecraftBot {
                 this.sendToHypixel(message);
             }
         });
+
         this.discord.on("interactionCreate", async (interaction) => {
             if (interaction.member && interaction.isCommand()) {
                 const guild = this.discord.guilds.cache.get(process.env.DISCORD_GUILD_ID!);
                 if (guild) {
                     const member = await guild.members.cache.get(interaction.user.id);
                     if (member && member.roles.cache.has(process.env.DISCORD_ADMIN_ROLE!)) {
-                        await interaction.deferReply({ fetchReply: true });
+                        await interaction.deferReply({ fetchReply: true, ephemeral: true });
                         if (interaction.commandName == "kick") {
-                            await this.bot.chat(`/g kick ${interaction.options.get("username")?.value} ${interaction.options.get("reason")?.value}`);
+                            await this.bot.chat(`/g kick ${interaction.options.get("player_name")?.value} ${interaction.options.get("reason")?.value}`);
                             await interaction.editReply("Command has been executed!");
                         }
                     } else {
@@ -190,11 +199,17 @@ class MinecraftBot {
         });
     };
 
-    public sendToDiscord = async (message: string | EmbedBuilder) => {
+    public sendToDiscord = async (
+        message: string | EmbedBuilder,
+        options?: {
+            isDiscord?: boolean;
+        },
+    ) => {
         const channel = await this.discord.channels.cache.get(process.env.DISCORD_LOGGING_CHANNEL ?? "");
         if (channel?.isTextBased()) {
             if (typeof message == "string") {
-                await channel.send({ content: `:hypixel: ${message}` });
+                const emoji = options && options.isDiscord ? config.emojis.discord : config.emojis.hypixel;
+                await channel.send({ content: `${emoji} ${message}` });
             } else {
                 await channel.send({ embeds: [message] });
             }
@@ -203,16 +218,48 @@ class MinecraftBot {
 
     private sendToHypixel = (message: Message) => {
         this.bot.chat(`${message.author.username}> ${message.content} `);
+        this.sendToDiscord(`${message.author.username}> ${message.content}`, {isDiscord: true});
     };
 
     private formatDiscordMessage = async (message: string) => {
-        const splitMessage = message.split(" ");
-        if (message.includes("joined.")) {
-            const discordEmbed = new EmbedBuilder().setDescription(`${splitMessage[0]} Joined! `);
-            this.sendToDiscord(discordEmbed);
-        } else if (message.includes("left")) {
-            const discordEmbed = new EmbedBuilder().setDescription(`${splitMessage[0]} left! `);
-            this.sendToDiscord(discordEmbed);
+        let splitMessage = sanatiseMessage(message, "{rank}").split(" ");
+        // Remove's player rank, so the array only contains a name and message content.
+        splitMessage = splitMessage.filter((rankString) => rankString !== "{rank}");
+
+        // Remove name, so we can get the content of the message.
+        const contentString = splitMessage.slice(1, splitMessage.length).join(" ");
+        const discordEmbed = new EmbedBuilder().setColor("Blurple");
+
+        console.log(contentString);
+
+        // A switch as it looks nicer than a ton of if-else statements.
+        switch (contentString) {
+            case "joined.":
+                discordEmbed.setDescription(message).setColor("Green");
+                this.sendToDiscord(discordEmbed);
+                break;
+            case "left.":
+                discordEmbed.setDescription(message).setColor("Red");
+                this.sendToDiscord(discordEmbed);
+                break;
+            case "joined the guild!":
+                discordEmbed.setDescription(message);
+                this.sendToDiscord(discordEmbed);
+                break;
+            case "left the guild!":
+                discordEmbed.setDescription(message);
+                this.sendToDiscord(discordEmbed);
+                break;
+            case "is not in your guild!":
+                discordEmbed.setDescription(message).setColor("DarkRed");
+                this.sendToDiscord(discordEmbed);
+                break;
+            case `was kicked from the guild by ${this.bot.username}!`:
+                discordEmbed.setDescription(message).setColor("DarkRed");
+                this.sendToDiscord(discordEmbed);
+                break;
+            default:
+                break;
         }
     };
 }
