@@ -3,7 +3,7 @@ import { SocksClient } from "socks";
 import { Client as Discord, EmbedBuilder, IntentsBitField, Message, REST, Routes, SlashCommandBuilder } from "discord.js";
 import dotenv from "dotenv";
 import path from "path";
-import { readdirSync } from "fs";
+import { readdirSync} from "fs";
 import { CommandBase } from "./util/CommandHandler";
 import { sanatiseMessage } from "./util/CommonUtils";
 
@@ -108,7 +108,21 @@ class MinecraftBot {
                     option.setName('player_name').setDescription(`The username of the player you'd like to demote`).setRequired(true); return option;
                 }),
                 new SlashCommandBuilder().setName('invite').setDescription('Invites a player to the guild').addStringOption((option)=> {
-                    option.setName('player_name').setDescription(`The username of the player you'd like to demote`).setRequired(true); return option;
+                    option.setName('player_name').setDescription(`The username of the player you'd like to invite`).setRequired(true); return option;
+                }),
+                new SlashCommandBuilder()
+                    .setName("mute")
+                    .setDescription("Mutes a player in the guild")
+                    .addStringOption((options) => {
+                        options.setName("player_name").setDescription("The name of the player to mute.").setRequired(true);
+                        return options;
+                    })
+                    .addStringOption((options) => {
+                        options.setName("time_period").setDescription("Time period to mute").setRequired(true);
+                        return options;
+                    }),
+                new SlashCommandBuilder().setName('unmute').setDescription('Unmutes a player in the guild').addStringOption((option)=> {
+                    option.setName('player_name').setDescription(`The username of the player you'd like to unmute`).setRequired(true); return option;
                 }),
             ];
 
@@ -221,6 +235,12 @@ class MinecraftBot {
                         } else if (interaction.commandName == "invite") {
                             await this.bot.chat(`/g invite ${interaction.options.get("player_name")?.value}`);
                             await interaction.editReply("Command has been executed!");
+                        } else if (interaction.commandName == "mute") {
+                            await this.bot.chat(`/g mute ${interaction.options.get("player_name")?.value} ${interaction.options.get("time_period")?.value}`);
+                            await interaction.editReply("Command has been executed!");
+                        }else if (interaction.commandName == "unmute") {
+                            await this.bot.chat(`/g unmute ${interaction.options.get("player_name")?.value}`);
+                            await interaction.editReply("Command has been executed!");
                         }
                     } else {
                         await interaction.reply(`You don't have the required permissions to execute this command!`);
@@ -325,6 +345,14 @@ class MinecraftBot {
             case contentString.match(/^invited (.+) to your guild. they have 5 minutes to accept./)?.input:
                 discordEmbed.setDescription(message).setColor("Green");
                 this.sendToDiscord(discordEmbed, { isAdmin: true });
+                break;
+            case contentString.match(/^has muted (.+) for (.+)/)?.input:
+                discordEmbed.setDescription(message).setColor("Green");
+                this.sendToDiscord(discordEmbed);
+                break;
+            case contentString.match(/^has unmuted (.+)/)?.input:
+                discordEmbed.setDescription(message).setColor("Green");
+                this.sendToDiscord(discordEmbed);
                 break;
             default:
                 break;
