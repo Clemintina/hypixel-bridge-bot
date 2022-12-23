@@ -80,6 +80,7 @@ class MinecraftBot {
         }
         this.bot = createBot(options);
         this.bot.addChatPattern("guild", /Guild > (.+)/, { parse: true, repeat: true });
+        this.bot.addChatPattern('officer',/Officer > (.+)/, {parse: true, repeat: true})
 
         if (process.env.DISCORD_TOKEN) {
             this.discord.login(process.env.DISCORD_TOKEN);
@@ -97,6 +98,18 @@ class MinecraftBot {
                         options.setName("reason").setDescription("Reason to kick the player").setRequired(true);
                         return options;
                     }),
+                new SlashCommandBuilder().setName('accept').setDescription('Accepts a player into the guild').addStringOption((option)=> {
+                    option.setName('player_name').setDescription(`The username of the player you'd like to accept into the guild`).setRequired(true); return option;
+                }),
+                new SlashCommandBuilder().setName('promote').setDescription('Promotes a player in the guild').addStringOption((option)=> {
+                    option.setName('player_name').setDescription(`The username of the player you'd like to promote`).setRequired(true); return option;
+                }),
+                new SlashCommandBuilder().setName('demote').setDescription('Demotes a player in the guild').addStringOption((option)=> {
+                    option.setName('player_name').setDescription(`The username of the player you'd like to demote`).setRequired(true); return option;
+                }),
+                new SlashCommandBuilder().setName('invite').setDescription('Invites a player to the guild').addStringOption((option)=> {
+                    option.setName('player_name').setDescription(`The username of the player you'd like to demote`).setRequired(true); return option;
+                }),
             ];
 
             rest.put(Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID!, process.env.DISCORD_GUILD_ID!), { body: commands }).then(() => console.log("PUT discord commands"));
@@ -155,6 +168,12 @@ class MinecraftBot {
             }
         });
 
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        this.bot.on('chat:officer', async ([[msg]]) =>{
+            this.sendToDiscord(msg, {isAdmin: true})
+        })
+
         this.bot.on("message", (msg) => {
             const message = msg.toString();
             const ansiMessage = msg.toAnsi();
@@ -190,6 +209,18 @@ class MinecraftBot {
                         if (interaction.commandName == "kick") {
                             await this.bot.chat(`/g kick ${interaction.options.get("player_name")?.value} ${interaction.options.get("reason")?.value}`);
                             await interaction.editReply("Command has been executed!");
+                        } else if (interaction.commandName == "accept") {
+                            await this.bot.chat(`/g accept ${interaction.options.get("player_name")?.value}`);
+                            await interaction.editReply("Command has been executed!");
+                        } else if (interaction.commandName == "promote") {
+                            await this.bot.chat(`/g promote ${interaction.options.get("player_name")?.value}`);
+                            await interaction.editReply("Command has been executed!");
+                        } else if (interaction.commandName == "demote") {
+                            await this.bot.chat(`/g demote ${interaction.options.get("player_name")?.value}`);
+                            await interaction.editReply("Command has been executed!");
+                        } else if (interaction.commandName == "invite") {
+                            await this.bot.chat(`/g invite ${interaction.options.get("player_name")?.value}`);
+                            await interaction.editReply("Command has been executed!");
                         }
                     } else {
                         await interaction.reply(`You don't have the required permissions to execute this command!`);
@@ -203,9 +234,10 @@ class MinecraftBot {
         message: string | EmbedBuilder,
         options?: {
             isDiscord?: boolean;
+            isAdmin?: boolean
         },
     ) => {
-        const channel = await this.discord.channels.cache.get(process.env.DISCORD_LOGGING_CHANNEL ?? "");
+        const channel = options && options.isAdmin ?  await this.discord.channels.cache.get(process.env.DISCORD_ADMIN_CHANNEL_ID??'') :await this.discord.channels.cache.get(process.env.DISCORD_LOGGING_CHANNEL ?? "");
         if (channel?.isTextBased()) {
             if (typeof message == "string") {
                 const emoji = options && options.isDiscord ? config.emojis.discord : config.emojis.hypixel;
@@ -216,21 +248,21 @@ class MinecraftBot {
         }
     };
 
-    private sendToHypixel = (message: Message) => {
+    private sendToHypixel = async (message: Message) => {
         this.bot.chat(`${message.author.username}> ${message.content} `);
+        await message.delete()
         this.sendToDiscord(`${message.author.username}> ${message.content}`, { isDiscord: true });
     };
 
     private formatDiscordMessage = async (message: string) => {
         let splitMessage = sanatiseMessage(message, "{rank}").split(" ");
         // Remove's player rank, so the array only contains a name and message content.
-        splitMessage = splitMessage.filter((rankString) => rankString !== "{rank}");
+        splitMessage = splitMessage.filter((rankString) => !rankString.includes('{rank}')).filter((emptyString)=>emptyString !=='');
 
         // Remove name, so we can get the content of the message.
-        const contentString = splitMessage.slice(1, splitMessage.length).join(" ");
+        const contentString = splitMessage.slice(1, splitMessage.length).join(" ").toLowerCase();
+        const playerName = splitMessage[0]?.trim()
         const discordEmbed = new EmbedBuilder().setColor("Blurple");
-
-        console.log(contentString);
 
         // A switch as it looks nicer than a ton of if-else statements.
         switch (contentString) {
@@ -243,20 +275,56 @@ class MinecraftBot {
                 this.sendToDiscord(discordEmbed);
                 break;
             case "joined the guild!":
-                discordEmbed.setDescription(message);
+                discordEmbed.setDescription(message).setColor("Green");
                 this.sendToDiscord(discordEmbed);
                 break;
             case "left the guild!":
-                discordEmbed.setDescription(message);
+                discordEmbed.setDescription(message).setColor("Red");
                 this.sendToDiscord(discordEmbed);
                 break;
             case "is not in your guild!":
                 discordEmbed.setDescription(message).setColor("DarkRed");
                 this.sendToDiscord(discordEmbed);
                 break;
-            case `was kicked from the guild by ${this.bot.username}!`:
+            case contentString.match(/^was kicked from the guild by (.+)!/)?.input:
                 discordEmbed.setDescription(message).setColor("DarkRed");
                 this.sendToDiscord(discordEmbed);
+                break;
+            case `has requested to join the guild!\nclick here to accept or type /guild accept ${playerName?.toLowerCase()}!\n-----------------------------------------------------\n`:
+                discordEmbed.setDescription(message).setColor("Green");
+                this.sendToDiscord(discordEmbed, { isAdmin: true });
+                break;
+            case "is already the highest rank you've created!----------------------------------------------------":
+                discordEmbed.setDescription(message.replaceAll("-", "")).setColor("Yellow");
+                this.sendToDiscord(discordEmbed, { isAdmin: true });
+                break;
+            case "is already the lowest rank you've created!----------------------------------------------------":
+                discordEmbed.setDescription(message.replaceAll("-", "")).setColor("Yellow");
+                this.sendToDiscord(discordEmbed, { isAdmin: true });
+                break;
+            case contentString.match(/^was promoted from (.+) to (.+)/i)?.input:
+                discordEmbed.setDescription(message.replaceAll("-", "")).setColor("Green");
+                this.sendToDiscord(discordEmbed);
+                break;
+            case contentString.match(/^was demoted from (.+) to (.+)/i)?.input:
+                discordEmbed.setDescription(message.replaceAll("-", "")).setColor("DarkRed");
+                this.sendToDiscord(discordEmbed);
+                break;
+            case "is already in another guild!":
+                discordEmbed.setDescription(message).setColor("Yellow");
+                this.sendToDiscord(discordEmbed, { isAdmin: true });
+                break;
+            case " is already in your guild!":
+                discordEmbed.setDescription(message).setColor("Yellow");
+                this.sendToDiscord(discordEmbed, { isAdmin: true });
+                break;
+            case "cannot invite this player to your guild!":
+                discordEmbed.setDescription(message).setColor("DarkRed");
+                this.sendToDiscord(discordEmbed, { isAdmin: true });
+                break;
+            case contentString.match(/^invited (.+) to your guild. they have 5 minutes to accept./)?.input:
+                discordEmbed.setDescription(message).setColor("Green");
+                this.sendToDiscord(discordEmbed, { isAdmin: true });
                 break;
             default:
                 break;
