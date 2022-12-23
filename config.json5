@@ -1,0 +1,12 @@
+// This file is JSON5 not JSON ( although JSON is valid in this file ), This is a lot less strict and makes it feel more like Javascript objects.
+// This should be easier to use for the end user as I can document it with comments like this!
+
+{
+	// Discord channel emojis. You can generate the codes needed by doing \:emoji: in discord.
+	emojis: {
+		// Hypixel Emoji in the format of <server:emote id>. Eg hypixel: '<:hypixel:1055748276080611358>'.
+		hypixel: '<:hypixel:1055748276080611358>',
+		// Discord Emoji in the format of <server:emote id>. Eg: discord: '<:discord:1055748336440844298>'.
+		discord: '<:discord:1055748336440844298>'
+	}
+}

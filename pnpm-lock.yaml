@@ -12,6 +12,7 @@ specifiers:
   erlpack: github:discord/erlpack
   eslint: ^8.27.0
   eslint-plugin-prettier: ^4.2.1
+  json5: ^2.2.2
   minecraft-data: ^3.18.0
   minecraft-protocol: ^1.36.1
   mineflayer: ^4.6.0
@@ -29,6 +30,7 @@ dependencies:
   discord.js: 14.7.1_3cxu5zja4e2r5wmvge7mdcljwq
   dotenv: 16.0.3
   erlpack: github.com/discord/erlpack/cbe76be04c2210fc9cb6ff95910f0937c1011d04
+  json5: 2.2.2
   minecraft-data: 3.20.0
   minecraft-protocol: 1.36.2
   mineflayer: 4.6.0
@@ -1140,6 +1142,12 @@ packages:
   /json-stable-stringify-without-jsonify/1.0.1:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
     dev: true
+
+  /json5/2.2.2:
+    resolution: {integrity: sha512-46Tk9JiOL2z7ytNQWFLpj99RZkVgeHf87yGQKsIkaPz1qSH9UczKH1rO7K3wgRselo0tYMUNfecYpm/p1vC7tQ==}
+    engines: {node: '>=6'}
+    hasBin: true
+    dev: false
 
   /jsonwebtoken/8.5.1:
     resolution: {integrity: sha512-XjwVfRS6jTMsqYs0EsuJ4LGxXV14zQybNd4L2r0UvbVnSF9Af8x7p5MzbJ90Ioz/9TI41/hTCvznF/loiSzn8w==}
