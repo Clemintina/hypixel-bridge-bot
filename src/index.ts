@@ -218,7 +218,7 @@ class MinecraftBot {
 
     private sendToHypixel = (message: Message) => {
         this.bot.chat(`${message.author.username}> ${message.content} `);
-        this.sendToDiscord(`${message.author.username}> ${message.content}`, {isDiscord: true});
+        this.sendToDiscord(`${message.author.username}> ${message.content}`, { isDiscord: true });
     };
 
     private formatDiscordMessage = async (message: string) => {
