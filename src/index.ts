@@ -3,7 +3,7 @@ import { SocksClient } from "socks";
 import { Client as Discord, EmbedBuilder, IntentsBitField, Message, REST, Routes, SlashCommandBuilder } from "discord.js";
 import dotenv from "dotenv";
 import path from "path";
-import { readdirSync} from "fs";
+import { readdirSync } from "fs";
 import { CommandBase } from "./util/CommandHandler";
 import { sanatiseMessage } from "./util/CommonUtils";
 
@@ -80,9 +80,10 @@ class MinecraftBot {
         }
         this.bot = createBot(options);
         this.bot.addChatPattern("guild", /Guild > (.+)/, { parse: true, repeat: true });
-        this.bot.addChatPattern('officer',/Officer > (.+)/, {parse: true, repeat: true})
+        this.bot.addChatPattern("officer", /Officer > (.+)/, { parse: true, repeat: true });
 
         if (process.env.DISCORD_TOKEN) {
+            console.log("Logging in to Discord");
             this.discord.login(process.env.DISCORD_TOKEN);
             const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
 
@@ -98,18 +99,34 @@ class MinecraftBot {
                         options.setName("reason").setDescription("Reason to kick the player").setRequired(true);
                         return options;
                     }),
-                new SlashCommandBuilder().setName('accept').setDescription('Accepts a player into the guild').addStringOption((option)=> {
-                    option.setName('player_name').setDescription(`The username of the player you'd like to accept into the guild`).setRequired(true); return option;
-                }),
-                new SlashCommandBuilder().setName('promote').setDescription('Promotes a player in the guild').addStringOption((option)=> {
-                    option.setName('player_name').setDescription(`The username of the player you'd like to promote`).setRequired(true); return option;
-                }),
-                new SlashCommandBuilder().setName('demote').setDescription('Demotes a player in the guild').addStringOption((option)=> {
-                    option.setName('player_name').setDescription(`The username of the player you'd like to demote`).setRequired(true); return option;
-                }),
-                new SlashCommandBuilder().setName('invite').setDescription('Invites a player to the guild').addStringOption((option)=> {
-                    option.setName('player_name').setDescription(`The username of the player you'd like to invite`).setRequired(true); return option;
-                }),
+                new SlashCommandBuilder()
+                    .setName("accept")
+                    .setDescription("Accepts a player into the guild")
+                    .addStringOption((option) => {
+                        option.setName("player_name").setDescription(`The username of the player you'd like to accept into the guild`).setRequired(true);
+                        return option;
+                    }),
+                new SlashCommandBuilder()
+                    .setName("promote")
+                    .setDescription("Promotes a player in the guild")
+                    .addStringOption((option) => {
+                        option.setName("player_name").setDescription(`The username of the player you'd like to promote`).setRequired(true);
+                        return option;
+                    }),
+                new SlashCommandBuilder()
+                    .setName("demote")
+                    .setDescription("Demotes a player in the guild")
+                    .addStringOption((option) => {
+                        option.setName("player_name").setDescription(`The username of the player you'd like to demote`).setRequired(true);
+                        return option;
+                    }),
+                new SlashCommandBuilder()
+                    .setName("invite")
+                    .setDescription("Invites a player to the guild")
+                    .addStringOption((option) => {
+                        option.setName("player_name").setDescription(`The username of the player you'd like to invite`).setRequired(true);
+                        return option;
+                    }),
                 new SlashCommandBuilder()
                     .setName("mute")
                     .setDescription("Mutes a player in the guild")
@@ -121,9 +138,13 @@ class MinecraftBot {
                         options.setName("time_period").setDescription("Time period to mute").setRequired(true);
                         return options;
                     }),
-                new SlashCommandBuilder().setName('unmute').setDescription('Unmutes a player in the guild').addStringOption((option)=> {
-                    option.setName('player_name').setDescription(`The username of the player you'd like to unmute`).setRequired(true); return option;
-                }),
+                new SlashCommandBuilder()
+                    .setName("unmute")
+                    .setDescription("Unmutes a player in the guild")
+                    .addStringOption((option) => {
+                        option.setName("player_name").setDescription(`The username of the player you'd like to unmute`).setRequired(true);
+                        return option;
+                    }),
             ];
 
             rest.put(Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID!, process.env.DISCORD_GUILD_ID!), { body: commands }).then(() => console.log("PUT discord commands"));
@@ -184,9 +205,9 @@ class MinecraftBot {
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        this.bot.on('chat:officer', async ([[msg]]) =>{
-            this.sendToDiscord(msg, {isAdmin: true})
-        })
+        this.bot.on("chat:officer", async ([[msg]]) => {
+            this.sendToDiscord(msg, { isAdmin: true });
+        });
 
         this.bot.on("message", (msg) => {
             const message = msg.toString();
@@ -238,7 +259,7 @@ class MinecraftBot {
                         } else if (interaction.commandName == "mute") {
                             await this.bot.chat(`/g mute ${interaction.options.get("player_name")?.value} ${interaction.options.get("time_period")?.value}`);
                             await interaction.editReply("Command has been executed!");
-                        }else if (interaction.commandName == "unmute") {
+                        } else if (interaction.commandName == "unmute") {
                             await this.bot.chat(`/g unmute ${interaction.options.get("player_name")?.value}`);
                             await interaction.editReply("Command has been executed!");
                         }
@@ -254,10 +275,10 @@ class MinecraftBot {
         message: string | EmbedBuilder,
         options?: {
             isDiscord?: boolean;
-            isAdmin?: boolean
+            isAdmin?: boolean;
         },
     ) => {
-        const channel = options && options.isAdmin ?  await this.discord.channels.cache.get(process.env.DISCORD_ADMIN_CHANNEL_ID??'') :await this.discord.channels.cache.get(process.env.DISCORD_LOGGING_CHANNEL ?? "");
+        const channel = options && options.isAdmin ? await this.discord.channels.cache.get(process.env.DISCORD_ADMIN_CHANNEL_ID ?? "") : await this.discord.channels.cache.get(process.env.DISCORD_LOGGING_CHANNEL ?? "");
         if (channel?.isTextBased()) {
             if (typeof message == "string") {
                 const emoji = options && options.isDiscord ? config.emojis.discord : config.emojis.hypixel;
@@ -270,18 +291,18 @@ class MinecraftBot {
 
     private sendToHypixel = async (message: Message) => {
         this.bot.chat(`${message.author.username}> ${message.content} `);
-        await message.delete()
+        await message.delete();
         this.sendToDiscord(`${message.author.username}> ${message.content}`, { isDiscord: true });
     };
 
     private formatDiscordMessage = async (message: string) => {
         let splitMessage = sanatiseMessage(message, "{rank}").split(" ");
         // Remove's player rank, so the array only contains a name and message content.
-        splitMessage = splitMessage.filter((rankString) => !rankString.includes('{rank}')).filter((emptyString)=>emptyString !=='');
+        splitMessage = splitMessage.filter((rankString) => !rankString.includes("{rank}")).filter((emptyString) => emptyString !== "");
 
         // Remove name, so we can get the content of the message.
         const contentString = splitMessage.slice(1, splitMessage.length).join(" ").toLowerCase();
-        const playerName = splitMessage[0]?.trim()
+        const playerName = splitMessage[0]?.trim();
         const discordEmbed = new EmbedBuilder().setColor("Blurple");
 
         // A switch as it looks nicer than a ton of if-else statements.
