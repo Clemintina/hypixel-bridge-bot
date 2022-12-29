@@ -28,7 +28,7 @@ export const setAppConfig = (config: AppConfig) => {
     appConfig = config;
 };
 
-class MinecraftBot {
+export class MinecraftBot {
     private readonly bot;
     private discord = new Discord({
         intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent],
@@ -198,8 +198,10 @@ class MinecraftBot {
                 }
             }
 
-            if (process.env.DISCORD_TOKEN && sanatiseMessage(player).trim() != this.bot.username) {
-                await this.sendToDiscord(`${sanatiseMessage(player)}: ${message}`);
+            if (process.env.DISCORD_TOKEN && sanatiseMessage(player) != this.bot.username) {
+                const embed = new EmbedBuilder().setColor('White').setTitle(sanatiseMessage(player)).setDescription(message)
+                                                // .setImage(`https://crafatar.com/avatars/${player_uuid}`)
+                await this.sendToDiscord(embed);
             }
         });
 
@@ -282,7 +284,7 @@ class MinecraftBot {
         if (channel?.isTextBased()) {
             if (typeof message == "string") {
                 const emoji = options && options.isDiscord ? config.emojis.discord : config.emojis.hypixel;
-                await channel.send({ content: `${emoji} ${message}` });
+                await channel.send({ content: message});
             } else {
                 await channel.send({ embeds: [message] });
             }
@@ -292,7 +294,8 @@ class MinecraftBot {
     private sendToHypixel = async (message: Message) => {
         this.bot.chat(`${message.author.username}> ${message.content} `);
         await message.delete();
-        this.sendToDiscord(`${message.author.username}> ${message.content}`, { isDiscord: true });
+        const embed = new EmbedBuilder().setColor('Blurple').setTitle(message.author.username).setDescription(message.content)
+        this.sendToDiscord(embed, { isDiscord: true });
     };
 
     private formatDiscordMessage = async (message: string) => {
