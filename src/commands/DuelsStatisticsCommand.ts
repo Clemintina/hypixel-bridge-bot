@@ -1,10 +1,9 @@
 import { CommandBase, CommandExecute } from "../util/CommandHandler";
 import { formatRatio, getPlayerUuid, sanatiseMessage, useHypixelApi } from "../util/CommonUtils";
-import { getPlayerRank } from "@zikeji/hypixel";
-import { Bot } from "mineflayer";
+import { MinecraftBot } from "../index";
 
 class DuelsStatisticsCommand extends CommandBase {
-    constructor(minecraftBot: Bot) {
+    constructor(minecraftBot: MinecraftBot) {
         super({ name: "duels", description: "Shows a player's Duels stats", minecraftBot });
     }
 
@@ -22,12 +21,19 @@ class DuelsStatisticsCommand extends CommandBase {
                     const kills = duels[`${duels_mode}kills`] ? (duels[`${duels_mode}kills`] as number) : 0;
                     const deaths = duels[`${duels_mode}deaths`] ? (duels[`${duels_mode}deaths`] as number) : 0;
                     const kdr = formatRatio(kills, deaths);
-                    this.getBotInstance().chat(`${getPlayerRank(playerStats).cleanPrefix} ${playerStats.displayname} KDR: ${kdr} Kills: ${kills} Deaths: ${deaths}`);
+
+                    const wins = duels[`${duels_mode}wins`] ? (duels[`${duels_mode}wins`] as number) : 0;
+                    const losses = duels[`${duels_mode}losses`] ? (duels[`${duels_mode}losses`] as number) : 0;
+                    const wlr = formatRatio(wins, losses);
+
+                    const formattedString = `Kills: ${kills} | Deaths: ${deaths} | KDR: ${kdr} |  Wins: ${wins} | Losses: ${losses} | WLR: ${wlr}`;
+
+                    this.send("Duels", formattedString, playerStats);
                 } else {
-                    this.getBotInstance().chat(`This player has no Duels stats!`);
+                    this.getBotInstance().getMineflayerInstance().chat(`This player has no Duels stats!`);
                 }
             } else {
-                this.getBotInstance().chat(`The player ${cleanPlayerName} is invalid!`);
+                this.getBotInstance().getMineflayerInstance().chat(`The player ${cleanPlayerName} is invalid!`);
             }
         });
 }

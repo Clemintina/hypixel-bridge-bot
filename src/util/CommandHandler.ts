@@ -1,9 +1,12 @@
-import { Bot } from "mineflayer";
+import { MinecraftBot } from "../index";
+import { EmbedBuilder } from "discord.js";
+import { Components, getPlayerRank } from "@zikeji/hypixel";
+import Player = Components.Schemas.Player;
 
 type CommandRegister = {
     name: string;
     description: string;
-    minecraftBot: Bot;
+    minecraftBot: MinecraftBot;
 };
 
 export type CommandExecute = {
@@ -36,4 +39,12 @@ export abstract class CommandBase {
     };
 
     abstract execute({ player, message, params }: CommandExecute): void;
+
+    protected send = (gamemode: string, formattedString: string, playerStats: Player) => {
+        const formattedRank = `${getPlayerRank(playerStats).cleanPrefix} ${playerStats.displayname.replaceAll("_", "\\_")}`;
+
+        this.getBotInstance().getMineflayerInstance().chat(formattedString);
+        const embed = new EmbedBuilder().setTitle(formattedRank).setDescription(`${gamemode} statistics for: ${formattedRank} | ${formattedString}`).setColor("Yellow");
+        this.getBotInstance().sendToDiscord(embed);
+    };
 }

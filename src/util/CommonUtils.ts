@@ -1,7 +1,6 @@
 import axios, { AxiosError } from "axios";
 import { Client, InvalidKeyError } from "@zikeji/hypixel";
-import { getAppConfig } from "../index";
-import { Bot } from "mineflayer";
+import { getAppConfig, MinecraftBot } from "../index";
 
 const RANK_REGEX = /\[[a-zA-Z+]+?]/gi;
 
@@ -24,21 +23,26 @@ export const formatRatio = (num1: number, num2: number) => {
     return displayValue.toString();
 };
 
+export const formatNumber = (num: number | undefined) => {
+    if (typeof num === "number") return num.toLocaleString();
+    return "0";
+};
+
 export const sanatiseMessage = (message: string, customWord?: string) => {
     return message.replace(RANK_REGEX, customWord ?? "").trim();
 };
 
-export const useHypixelApi = async (botInstance: Bot, apiCaller: (hypixelClient: Client) => Promise<void>) => {
+export const useHypixelApi = async (botInstance: MinecraftBot, apiCaller: (hypixelClient: Client) => Promise<void>) => {
     try {
         const hypixelClient = new Client(getAppConfig().hypixelApiKey);
         return await apiCaller(hypixelClient);
     } catch (exceptionThrown) {
         if (exceptionThrown instanceof InvalidKeyError) {
-            botInstance.chat("Invalid API Key, Generating...");
-            await botInstance.waitForTicks(40);
-            botInstance.chat("/api new");
+            botInstance.getMineflayerInstance().chat("Invalid API Key, Generating...");
+            await botInstance.getMineflayerInstance().waitForTicks(40);
+            botInstance.getMineflayerInstance().chat("/api new");
         } else if (exceptionThrown instanceof AxiosError) {
-            botInstance.chat("This player is invalid!  Maybe you typed their name incorrectly.");
+            botInstance.getMineflayerInstance().chat("This player is invalid!  Maybe you typed their name incorrectly.");
         }
     }
 };

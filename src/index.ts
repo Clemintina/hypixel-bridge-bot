@@ -8,6 +8,7 @@ import { CommandBase } from "./util/CommandHandler";
 import { sanatiseMessage } from "./util/CommonUtils";
 
 import "json5/lib/register";
+
 const config = require("../config.json5");
 
 dotenv.config();
@@ -160,7 +161,7 @@ export class MinecraftBot {
         for (const file of files) {
             const resolvePath = path.join(commandsPath, file);
             const defaultImport = (await import(resolvePath)).default;
-            const command = new defaultImport(this.bot);
+            const command = new defaultImport(this);
             this.commandMap.set(`${process.env?.BOT_PREFIX ?? "!"}${command.getName()}`, command);
         }
 
@@ -196,11 +197,12 @@ export class MinecraftBot {
                 if (commandInstance) {
                     commandInstance.execute({ player, message, params });
                 }
+                return;
             }
 
             if (process.env.DISCORD_TOKEN && sanatiseMessage(player) != this.bot.username) {
-                const embed = new EmbedBuilder().setColor('White').setTitle(sanatiseMessage(player)).setDescription(message)
-                                                // .setImage(`https://crafatar.com/avatars/${player_uuid}`)
+                const embed = new EmbedBuilder().setColor("White").setTitle(sanatiseMessage(player)).setDescription(message);
+                // .setImage(`https://crafatar.com/avatars/${player_uuid}`)
                 await this.sendToDiscord(embed);
             }
         });
@@ -284,7 +286,7 @@ export class MinecraftBot {
         if (channel?.isTextBased()) {
             if (typeof message == "string") {
                 const emoji = options && options.isDiscord ? config.emojis.discord : config.emojis.hypixel;
-                await channel.send({ content: message});
+                await channel.send({ content: message });
             } else {
                 await channel.send({ embeds: [message] });
             }
@@ -294,7 +296,7 @@ export class MinecraftBot {
     private sendToHypixel = async (message: Message) => {
         this.bot.chat(`${message.author.username}> ${message.content} `);
         await message.delete();
-        const embed = new EmbedBuilder().setColor('Blurple').setTitle(message.author.username).setDescription(message.content)
+        const embed = new EmbedBuilder().setColor("Blurple").setTitle(message.author.username).setDescription(message.content);
         this.sendToDiscord(embed, { isDiscord: true });
     };
 
@@ -382,6 +384,8 @@ export class MinecraftBot {
                 break;
         }
     };
+
+    public getMineflayerInstance = () => this.bot;
 }
 
 new MinecraftBot().start();
