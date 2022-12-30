@@ -5,44 +5,44 @@ import { getAppConfig, MinecraftBot } from "../index";
 const RANK_REGEX = /\[[a-zA-Z+]+?]/gi;
 
 export const getPlayerUuid = async (username: string) => {
-    if (username.length == 32 || username.length == 36) return username;
-    const response = await axios.get(`https://playerdb.co/api/player/minecraft/${username}`);
-    const player = response.data;
-    if (player.code == "player.found") {
-        return player.data.player.id;
-    } else {
-        return undefined;
-    }
+	if (username.length == 32 || username.length == 36) return username;
+	const response = await axios.get(`https://playerdb.co/api/player/minecraft/${username}`);
+	const player = response.data;
+	if (player.code == "player.found") {
+		return player.data.player.id;
+	} else {
+		return undefined;
+	}
 };
 
 export const formatRatio = (num1: number, num2: number) => {
-    const playerValue = num1 / num2;
-    let displayValue: number | string = playerValue;
-    if (!isFinite(playerValue)) displayValue = ~~Number((((0 - 18) / 0) * 100).toFixed(2));
-    if (!Number.isInteger(playerValue)) displayValue = playerValue.toFixed(2);
-    return displayValue.toString();
+	const playerValue = num1 / num2;
+	let displayValue: number | string = playerValue;
+	if (!isFinite(playerValue)) displayValue = ~~Number((((0 - 18) / 0) * 100).toFixed(2));
+	if (!Number.isInteger(playerValue)) displayValue = playerValue.toFixed(2);
+	return displayValue.toString();
 };
 
 export const formatNumber = (num: number | undefined) => {
-    if (typeof num === "number") return num.toLocaleString();
-    return "0";
+	if (typeof num === "number") return num.toLocaleString();
+	return "0";
 };
 
 export const sanatiseMessage = (message: string, customWord?: string) => {
-    return message.replace(RANK_REGEX, customWord ?? "").trim();
+	return message.replace(RANK_REGEX, customWord ?? "").trim();
 };
 
 export const useHypixelApi = async (botInstance: MinecraftBot, apiCaller: (hypixelClient: Client) => Promise<void>) => {
-    try {
-        const hypixelClient = new Client(getAppConfig().hypixelApiKey);
-        return await apiCaller(hypixelClient);
-    } catch (exceptionThrown) {
-        if (exceptionThrown instanceof InvalidKeyError) {
-            botInstance.getMineflayerInstance().chat("Invalid API Key, Generating...");
-            await botInstance.getMineflayerInstance().waitForTicks(40);
-            botInstance.getMineflayerInstance().chat("/api new");
-        } else if (exceptionThrown instanceof AxiosError) {
-            botInstance.getMineflayerInstance().chat("This player is invalid!  Maybe you typed their name incorrectly.");
-        }
-    }
+	try {
+		const hypixelClient = new Client(getAppConfig().hypixelApiKey);
+		return await apiCaller(hypixelClient);
+	} catch (exceptionThrown) {
+		if (exceptionThrown instanceof InvalidKeyError) {
+			botInstance.getMineflayerInstance().chat("Invalid API Key, Generating...");
+			await botInstance.getMineflayerInstance().waitForTicks(40);
+			botInstance.getMineflayerInstance().chat("/api new");
+		} else if (exceptionThrown instanceof AxiosError) {
+			botInstance.getMineflayerInstance().chat("This player is invalid!  Maybe you typed their name incorrectly.");
+		}
+	}
 };
