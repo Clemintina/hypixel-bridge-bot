@@ -213,7 +213,7 @@ export class MinecraftBot {
 			this.sendToDiscord(msg, { isAdmin: true });
 		});
 
-		this.bot.on("message", (msg) => {
+		this.bot.on("message", async (msg) => {
 			const message = msg.toString();
 			const ansiMessage = msg.toAnsi();
 			if (message.includes("Guild >")) console.log(ansiMessage);
@@ -222,6 +222,11 @@ export class MinecraftBot {
 				// Hypixel Server messages, this is all we need xd
 				console.log(ansiMessage);
 				this.formatDiscordMessage(message);
+			}
+
+			if (message.includes("invited you to join their guild")) {
+				const guildJoinMessage = message.replaceAll("-", "").split("has invited you to join")[0];
+				this.bot.chat(`/g accept ${sanatiseMessage(guildJoinMessage)}`)
 			}
 
 			if (message.includes("Your new API key is")) {
