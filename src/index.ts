@@ -210,7 +210,11 @@ export class MinecraftBot {
 		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-ignore
 		this.bot.on("chat:officer", async ([[msg]]) => {
-			this.sendToDiscord(msg, { isAdmin: true });
+			const player = msg.split(":")[0] as string;
+			const message = msg.split(": ")[1] as string;
+			const embed = new EmbedBuilder().setColor("White").setTitle(sanatiseMessage(player)).setDescription(message);
+			// .setImage(`https://crafatar.com/avatars/${player_uuid}`)
+			await this.sendToDiscord(embed);
 		});
 
 		this.bot.on("message", async (msg) => {
