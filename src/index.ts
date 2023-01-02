@@ -226,7 +226,7 @@ export class MinecraftBot {
 
 			if (message.includes("invited you to join their guild")) {
 				const guildJoinMessage = message.replaceAll("-", "").split("has invited you to join")[0];
-				this.bot.chat(`/g accept ${sanatiseMessage(guildJoinMessage)}`)
+				this.bot.chat(`/g accept ${sanatiseMessage(guildJoinMessage)}`);
 			}
 
 			if (message.includes("Your new API key is")) {

@@ -26,8 +26,8 @@ class DuelsStatisticsCommand extends CommandBase {
 					const losses = skywars.losses as number;
 					const wlr = formatRatio(wins, losses);
 
-					const level = getSkyWarsLevelInfo(playerStats).level
-					const levelFormatted = `${level} ${getSkyWarsPrestigeForLevel(level).textIcon}`
+					const level = getSkyWarsLevelInfo(playerStats).level;
+					const levelFormatted = `${level} ${getSkyWarsPrestigeForLevel(level).textIcon}`;
 
 					const formattedString = `${levelFormatted} Kills: ${formatNumber(kills)} | Deaths: ${formatNumber(deaths)} | KDR: ${kdr} | Wins: ${formatNumber(wins)} | Losses: ${formatNumber(losses)} | WLR: ${wlr}`;
 
