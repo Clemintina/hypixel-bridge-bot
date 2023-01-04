@@ -8,6 +8,7 @@ import { CommandBase } from "./util/CommandHandler";
 import { sanatiseMessage } from "./util/CommonUtils";
 
 import "json5/lib/register";
+import axios from "axios";
 
 const config = require("../config.json5");
 
@@ -29,13 +30,29 @@ export const setAppConfig = (config: AppConfig) => {
 	appConfig = config;
 };
 
+export type PlayerDB = {
+	code: string;
+	message: string;
+	data: {
+		player: {
+			meta: Record<string, never>;
+			username: string;
+			id: string;
+			raw_id: string;
+			avatar: string;
+		};
+	};
+	success: boolean;
+};
+
 export class MinecraftBot {
 	private readonly bot;
 	private discord = new Discord({
-		intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent],
+		intents: [ IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent ],
 	});
 	private key = "";
 	private commandMap: Map<string, CommandBase> = new Map();
+	private usernameCache: Map<string, string> = new Map<string, string>();
 
 	constructor() {
 		const username = process.env.MINECRAFT_EMAIL ?? "";
@@ -87,7 +104,6 @@ export class MinecraftBot {
 			console.log("Logging in to Discord");
 			this.discord.login(process.env.DISCORD_TOKEN);
 			const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
-
 			const commands = [
 				new SlashCommandBuilder()
 					.setName("kick")
@@ -147,7 +163,6 @@ export class MinecraftBot {
 						return option;
 					}),
 			];
-
 			rest.put(Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID!, process.env.DISCORD_GUILD_ID!), { body: commands }).then(() => console.log("PUT discord commands"));
 		} else {
 			console.log("No discord token in .env file, Not logging to discord!");
@@ -162,7 +177,7 @@ export class MinecraftBot {
 			const resolvePath = path.join(commandsPath, file);
 			const defaultImport = (await import(resolvePath)).default;
 			const command = new defaultImport(this);
-			this.commandMap.set(`${process.env?.BOT_PREFIX ?? "!"}${command.getName()}`, command);
+			this.commandMap.set(`${ process.env?.BOT_PREFIX ?? "!" }${ command.getName() }`, command);
 		}
 
 		await this.startBot();
@@ -174,7 +189,7 @@ export class MinecraftBot {
 			await this.bot.waitForTicks(40);
 			this.bot.chat("/chat g");
 			// Force Limbo
-			for (let i = 0; i < 20; i++) {
+			for (let i = 0; i < 20; i ++) {
 				this.bot.chat("/limvo");
 			}
 		});
@@ -201,15 +216,28 @@ export class MinecraftBot {
 			}
 
 			if (process.env.DISCORD_TOKEN && sanatiseMessage(player) != this.bot.username) {
-				const embed = new EmbedBuilder().setColor("White").setTitle(sanatiseMessage(player)).setDescription(message);
-				// .setImage(`https://crafatar.com/avatars/${player_uuid}`)
+				const playerUsername = sanatiseMessage(player);
+				const embed = new EmbedBuilder().setColor("White").setTitle(playerUsername).setDescription(message);
+
+				if (!this.usernameCache.has(playerUsername)) {
+					const { data, status } = await axios.get<PlayerDB>(`https://playerdb.co/api/player/minecraft/${ playerUsername }`);
+					if (status == 200) {
+						this.usernameCache.set(playerUsername, data.data.player.avatar);
+						embed.setThumbnail(data.data.player.avatar);
+					}
+				} else {
+					const playerAvatar = this.usernameCache.get(playerUsername);
+					if (playerAvatar) {
+						embed.setThumbnail(playerAvatar);
+					}
+				}
 				await this.sendToDiscord(embed);
 			}
 		});
 
 		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-ignore
-		this.bot.on("chat:officer", async ([[msg]]) => {
+		this.bot.on("chat:officer", async ([ [ msg ] ]) => {
 			const player = msg.split(":")[0] as string;
 			const message = msg.split(": ")[1] as string;
 			const embed = new EmbedBuilder().setColor("White").setTitle(sanatiseMessage(player)).setDescription(message);
@@ -230,7 +258,7 @@ export class MinecraftBot {
 
 			if (message.includes("invited you to join their guild")) {
 				const guildJoinMessage = message.replaceAll("-", "").split("has invited you to join")[0];
-				this.bot.chat(`/g accept ${sanatiseMessage(guildJoinMessage)}`);
+				this.bot.chat(`/g accept ${ sanatiseMessage(guildJoinMessage) }`);
 			}
 
 			if (message.includes("Your new API key is")) {
@@ -255,25 +283,25 @@ export class MinecraftBot {
 					if (member && member.roles.cache.has(process.env.DISCORD_ADMIN_ROLE!)) {
 						await interaction.deferReply({ fetchReply: true, ephemeral: true });
 						if (interaction.commandName == "kick") {
-							await this.bot.chat(`/g kick ${interaction.options.get("player_name")?.value} ${interaction.options.get("reason")?.value}`);
+							await this.bot.chat(`/g kick ${ interaction.options.get("player_name")?.value } ${ interaction.options.get("reason")?.value }`);
 							await interaction.editReply("Command has been executed!");
 						} else if (interaction.commandName == "accept") {
-							await this.bot.chat(`/g accept ${interaction.options.get("player_name")?.value}`);
+							await this.bot.chat(`/g accept ${ interaction.options.get("player_name")?.value }`);
 							await interaction.editReply("Command has been executed!");
 						} else if (interaction.commandName == "promote") {
-							await this.bot.chat(`/g promote ${interaction.options.get("player_name")?.value}`);
+							await this.bot.chat(`/g promote ${ interaction.options.get("player_name")?.value }`);
 							await interaction.editReply("Command has been executed!");
 						} else if (interaction.commandName == "demote") {
-							await this.bot.chat(`/g demote ${interaction.options.get("player_name")?.value}`);
+							await this.bot.chat(`/g demote ${ interaction.options.get("player_name")?.value }`);
 							await interaction.editReply("Command has been executed!");
 						} else if (interaction.commandName == "invite") {
-							await this.bot.chat(`/g invite ${interaction.options.get("player_name")?.value}`);
+							await this.bot.chat(`/g invite ${ interaction.options.get("player_name")?.value }`);
 							await interaction.editReply("Command has been executed!");
 						} else if (interaction.commandName == "mute") {
-							await this.bot.chat(`/g mute ${interaction.options.get("player_name")?.value} ${interaction.options.get("time_period")?.value}`);
+							await this.bot.chat(`/g mute ${ interaction.options.get("player_name")?.value } ${ interaction.options.get("time_period")?.value }`);
 							await interaction.editReply("Command has been executed!");
 						} else if (interaction.commandName == "unmute") {
-							await this.bot.chat(`/g unmute ${interaction.options.get("player_name")?.value}`);
+							await this.bot.chat(`/g unmute ${ interaction.options.get("player_name")?.value }`);
 							await interaction.editReply("Command has been executed!");
 						}
 					} else {
@@ -295,15 +323,15 @@ export class MinecraftBot {
 		if (channel?.isTextBased()) {
 			if (typeof message == "string") {
 				const emoji = options && options.isDiscord ? config.emojis.discord : config.emojis.hypixel;
-				await channel.send({ content: message });
+				await channel.send({ content: `${ emoji } ${ message }` });
 			} else {
-				await channel.send({ embeds: [message] });
+				await channel.send({ embeds: [ message ] });
 			}
 		}
 	};
 
 	private sendToHypixel = async (message: Message) => {
-		this.bot.chat(`${message.author.username}> ${message.content} `);
+		this.bot.chat(`${ message.author.username }> ${ message.content } `);
 		await message.delete();
 		const embed = new EmbedBuilder().setColor("Blurple").setTitle(message.author.username).setDescription(message.content);
 		this.sendToDiscord(embed, { isDiscord: true });
@@ -345,7 +373,7 @@ export class MinecraftBot {
 				discordEmbed.setDescription(message).setColor("DarkRed");
 				this.sendToDiscord(discordEmbed);
 				break;
-			case `has requested to join the guild!\nclick here to accept or type /guild accept ${playerName?.toLowerCase()}!\n-----------------------------------------------------\n`:
+			case `has requested to join the guild!\nclick here to accept or type /guild accept ${ playerName?.toLowerCase() }!\n-----------------------------------------------------\n`:
 				discordEmbed.setDescription(message).setColor("Green");
 				this.sendToDiscord(discordEmbed, { isAdmin: true });
 				break;
