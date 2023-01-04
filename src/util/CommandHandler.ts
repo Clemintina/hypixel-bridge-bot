@@ -1,6 +1,6 @@
 import { MinecraftBot } from "../index";
-import { ColorResolvable, EmbedBuilder, HexColorString } from "discord.js";
-import { Components, getPlayerRank, MinecraftFormatting } from "@zikeji/hypixel";
+import { EmbedBuilder, HexColorString } from "discord.js";
+import { Components, getPlayerRank } from "@zikeji/hypixel";
 import Player = Components.Schemas.Player;
 
 type CommandRegister = {
