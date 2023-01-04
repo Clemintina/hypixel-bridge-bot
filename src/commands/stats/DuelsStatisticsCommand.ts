@@ -1,6 +1,6 @@
-import { CommandBase, CommandExecute } from "../util/CommandHandler";
-import { formatNumber, formatRatio, getPlayerUuid, sanatiseMessage, useHypixelApi } from "../util/CommonUtils";
-import { MinecraftBot } from "../index";
+import { CommandBase, CommandExecute } from "../../util/CommandHandler";
+import { formatNumber, formatRatio, getPlayerUuid, sanatiseMessage, useHypixelApi } from "../../util/CommonUtils";
+import { MinecraftBot } from "../../index";
 
 class DuelsStatisticsCommand extends CommandBase {
 	constructor(minecraftBot: MinecraftBot) {
