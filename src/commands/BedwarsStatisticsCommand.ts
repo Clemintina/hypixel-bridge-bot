@@ -17,12 +17,14 @@ class BedwarsStatisticsCommand extends CommandBase {
 			if (playerStats) {
 				const bedwars = playerStats.stats.Bedwars;
 				const star = playerStats?.achievements?.bedwars_level ?? 0;
-				const fkdr = formatRatio(bedwars?.final_kills_bedwars ?? 0, bedwars?.final_deaths_bedwars ?? 0);
-				const bblr = formatRatio(bedwars?.beds_broken_bedwars ?? 0, bedwars?.beds_lost_bedwars ?? 0);
-				const wlr = formatRatio(bedwars?.wins_bedwars ?? 0, bedwars?.losses_bedwars ?? 0);
-				const finals = bedwars?.final_kills_bedwars;
+				const finals = bedwars?.final_kills_bedwars ?? 0;
+				const wins = bedwars?.wins_bedwars ?? 0;
 
-				const formattedString = `${star}\u272B FKDR: ${fkdr} | BBLR: ${bblr} | WLR: ${wlr} | FK: ${formatNumber(finals)}`;
+				const fkdr = formatRatio(finals, bedwars?.final_deaths_bedwars ?? 0);
+				const bblr = formatRatio(bedwars?.beds_broken_bedwars ?? 0, bedwars?.beds_lost_bedwars ?? 0);
+				const wlr = formatRatio(wins, bedwars?.losses_bedwars ?? 0);
+
+				const formattedString = `${star}\u272B FKDR: ${fkdr} | BBLR: ${bblr} | WLR: ${wlr} | FK: ${formatNumber(finals)} | Wins: ${formatNumber(wins)}`;
 
 				this.send("Bedwars", formattedString, playerStats);
 			} else {
