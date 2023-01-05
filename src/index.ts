@@ -206,11 +206,11 @@ export class MinecraftBot {
 			}
 
 			if (process.env.DISCORD_TOKEN && sanatiseMessage(player) != this.bot.username) {
-				const playerUsername = sanatiseMessage(player);
+				const playerUsername = sanatiseMessage(player).toLowerCase();
 				const embed = new EmbedBuilder().setColor("White").setDescription(message);
 
 				// Incase the bot was restarted when players are online, we can still add an avatar.
-				if (!this.playerCache.has(playerUsername)) {
+				if (!this.getPlayerCache().has(playerUsername)) {
 					const { data, status } = await axios.get<PlayerDB>(`https://playerdb.co/api/player/minecraft/${playerUsername}`);
 					if (status == 200) {
 						this.getPlayerCache().set(playerUsername, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: null });
@@ -224,7 +224,7 @@ export class MinecraftBot {
 				}
 
 				// For type safety, We check to ensure it's defined even though it should be!
-				const playerMapObject = this.playerCache.get(playerUsername);
+				const playerMapObject = this.getPlayerCache().get(playerUsername);
 				if (playerMapObject) {
 					embed.setAuthor({ iconURL: playerMapObject.avatarUrl, name: playerUsername });
 				}
@@ -343,20 +343,21 @@ export class MinecraftBot {
 
 		// Remove name, so we can get the content of the message.
 		const contentString = splitMessage.slice(1, splitMessage.length).join(" ").toLowerCase();
-		const playerName = splitMessage[0]?.trim();
+		const playerUsername = splitMessage[0]?.trim();
+		const playerUsernameLower = playerUsername.toLowerCase();
 		const discordEmbed = new EmbedBuilder().setColor("Blurple");
 
 		// A switch as it looks nicer than a ton of if-else statements.
 		switch (contentString) {
 			case "joined.":
 				discordEmbed.setDescription(message).setColor("Green");
-				if (!this.playerCache.has(playerName)) {
-					const { data, status } = await axios.get<PlayerDB>(`https://playerdb.co/api/player/minecraft/${playerName}`);
+				if (!this.getPlayerCache().has(playerUsernameLower)) {
+					const { data, status } = await axios.get<PlayerDB>(`https://playerdb.co/api/player/minecraft/${playerUsernameLower}`);
 					if (status == 200) {
-						this.getPlayerCache().set(playerName, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: null });
+						this.getPlayerCache().set(playerUsernameLower, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: null });
 						try {
 							const playerObject = await new Client(this.key).player.uuid(data.data.player.id);
-							this.getPlayerCache().set(playerName, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: getPlayerRank(playerObject) });
+							this.getPlayerCache().set(playerUsernameLower, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: getPlayerRank(playerObject) });
 						} catch (e) {
 							console.log(e);
 						}
@@ -384,7 +385,7 @@ export class MinecraftBot {
 				discordEmbed.setDescription(message).setColor("DarkRed");
 				this.sendToDiscord(discordEmbed);
 				break;
-			case `has requested to join the guild!\nclick here to accept or type /guild accept ${playerName?.toLowerCase()}!\n-----------------------------------------------------\n`:
+			case `has requested to join the guild!\nclick here to accept or type /guild accept ${playerUsername?.toLowerCase()}!\n-----------------------------------------------------\n`:
 				discordEmbed.setDescription(message).setColor("Green");
 				this.sendToDiscord(discordEmbed, { isAdmin: true });
 				break;
