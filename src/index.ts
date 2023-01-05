@@ -9,6 +9,8 @@ import { sanatiseMessage } from "./util/CommonUtils";
 
 import "json5/lib/register";
 import axios from "axios";
+import { PlayerDB, PlayerMapObject } from "./util/CustomTypes";
+import { Client, getPlayerRank } from "@zikeji/hypixel";
 
 const config = require("../config.json5");
 
@@ -30,21 +32,6 @@ export const setAppConfig = (config: AppConfig) => {
 	appConfig = config;
 };
 
-export type PlayerDB = {
-	code: string;
-	message: string;
-	data: {
-		player: {
-			meta: Record<string, never>;
-			username: string;
-			id: string;
-			raw_id: string;
-			avatar: string;
-		};
-	};
-	success: boolean;
-};
-
 export class MinecraftBot {
 	private readonly bot;
 	private discord = new Discord({
@@ -52,7 +39,7 @@ export class MinecraftBot {
 	});
 	private key = "";
 	private commandMap: Map<string, CommandBase> = new Map();
-	private playerCache: Map<string, string> = new Map<string, string>();
+	private playerCache: Map<string, PlayerMapObject> = new Map<string, PlayerMapObject>();
 
 	constructor() {
 		const username = process.env.MINECRAFT_EMAIL ?? "";
@@ -170,7 +157,7 @@ export class MinecraftBot {
 	}
 
 	public start = async () => {
-		const commandPaths = ["stats"];
+		const commandPaths = ["stats", "fun"];
 		for (const commandPathRaw of commandPaths) {
 			const commandsPath = path.join(__dirname, "commands", commandPathRaw);
 			const files = readdirSync(commandsPath).filter((f) => f.endsWith(".js") || f.endsWith(".ts"));
@@ -220,20 +207,26 @@ export class MinecraftBot {
 
 			if (process.env.DISCORD_TOKEN && sanatiseMessage(player) != this.bot.username) {
 				const playerUsername = sanatiseMessage(player);
-				const embed = new EmbedBuilder().setColor("White").setTitle(playerUsername).setDescription(message);
+				const embed = new EmbedBuilder().setColor("White").setDescription(message);
 
 				// Incase the bot was restarted when players are online, we can still add an avatar.
 				if (!this.playerCache.has(playerUsername)) {
 					const { data, status } = await axios.get<PlayerDB>(`https://playerdb.co/api/player/minecraft/${playerUsername}`);
 					if (status == 200) {
-						this.playerCache.set(playerUsername, data.data.player.avatar);
+						this.getPlayerCache().set(playerUsername, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: null });
+						try {
+							const playerObject = await new Client(this.key).player.uuid(data.data.player.id);
+							this.getPlayerCache().set(playerUsername, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: getPlayerRank(playerObject) });
+						} catch (e) {
+							console.log(e);
+						}
 					}
 				}
 
 				// For type safety, We check to ensure it's defined even though it should be!
-				const playerAvatar = this.playerCache.get(playerUsername);
-				if (playerAvatar) {
-					embed.setThumbnail(playerAvatar);
+				const playerMapObject = this.playerCache.get(playerUsername);
+				if (playerMapObject) {
+					embed.setAuthor({ iconURL: playerMapObject.avatarUrl, name: playerUsername });
 				}
 				await this.sendToDiscord(embed);
 			}
@@ -247,8 +240,8 @@ export class MinecraftBot {
 			const cleanPlayer = sanatiseMessage(player);
 
 			const embed = new EmbedBuilder().setColor("White").setTitle(cleanPlayer).setDescription(message);
-			const avatar = this.getPlayerCache().get(cleanPlayer);
-			if (avatar) embed.setThumbnail(avatar);
+			const playerMapObject = this.getPlayerCache().get(cleanPlayer);
+			if (playerMapObject) embed.setAuthor({ iconURL: playerMapObject.avatarUrl, name: cleanPlayer });
 			await this.sendToDiscord(embed, { isAdmin: true });
 		});
 
@@ -360,7 +353,13 @@ export class MinecraftBot {
 				if (!this.playerCache.has(playerName)) {
 					const { data, status } = await axios.get<PlayerDB>(`https://playerdb.co/api/player/minecraft/${playerName}`);
 					if (status == 200) {
-						this.getPlayerCache().set(playerName, data.data.player.avatar);
+						this.getPlayerCache().set(playerName, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: null });
+						try {
+							const playerObject = await new Client(this.key).player.uuid(data.data.player.id);
+							this.getPlayerCache().set(playerName, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: getPlayerRank(playerObject) });
+						} catch (e) {
+							console.log(e);
+						}
 					}
 				}
 				this.sendToDiscord(discordEmbed);
