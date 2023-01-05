@@ -207,7 +207,7 @@ export class MinecraftBot {
 
 			if (process.env.DISCORD_TOKEN && sanatiseMessage(player) != this.bot.username) {
 				const playerUsername = sanatiseMessage(player).toLowerCase();
-				const embed = new EmbedBuilder().setColor("White").setDescription(message);
+				const embed = new EmbedBuilder().setDescription(message);
 
 				// Incase the bot was restarted when players are online, we can still add an avatar.
 				if (!this.getPlayerCache().has(playerUsername)) {
@@ -226,7 +226,11 @@ export class MinecraftBot {
 				// For type safety, We check to ensure it's defined even though it should be!
 				const playerMapObject = this.getPlayerCache().get(playerUsername);
 				if (playerMapObject) {
-					embed.setAuthor({ iconURL: playerMapObject.avatarUrl, name: playerUsername });
+					embed.setAuthor({ iconURL: playerMapObject.avatarUrl, name: sanatiseMessage(player) });
+					embed.setColor(`#${playerMapObject.rank?.colorHex}`);
+				}else {
+					embed.setColor('White')
+					embed.setAuthor({name: sanatiseMessage(player)})
 				}
 				await this.sendToDiscord(embed);
 			}
