@@ -348,7 +348,7 @@ export class MinecraftBot {
 		// Remove name, so we can get the content of the message.
 		const contentString = splitMessage.slice(1, splitMessage.length).join(" ").toLowerCase();
 		const playerUsername = splitMessage[0]?.trim();
-		const playerUsernameLower = playerUsername.toLowerCase();
+		const playerUsernameLower = playerUsername?.toLowerCase();
 		const discordEmbed = new EmbedBuilder().setColor("Blurple");
 
 		// A switch as it looks nicer than a ton of if-else statements.
