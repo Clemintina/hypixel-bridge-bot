@@ -10,8 +10,14 @@ class BedwarsStatisticsCommand extends CommandBase {
 	public execute = async ({ player, params }: CommandExecute) =>
 		useHypixelApi(this.getBotInstance(), async (hypixelClient) => {
 			const cleanPlayerName = sanatiseMessage(player).trim();
+			let playerUuid;
 
-			const playerUuid = await getPlayerUuid(params.length == 0 ? cleanPlayerName : params[0].trim());
+			if (this.getBotInstance().getPlayerCache().has(player.toLowerCase()) && params.length == 0) {
+				const cachedPlayer = this.getBotInstance().getPlayerCache().get(player.toLowerCase());
+				if (cachedPlayer) playerUuid = cachedPlayer.uuid;
+			} else {
+				playerUuid = await getPlayerUuid(params.length == 0 ? cleanPlayerName : params[0].trim());
+			}
 			const playerStats = await hypixelClient.player.uuid(playerUuid);
 
 			if (playerStats) {
