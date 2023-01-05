@@ -228,9 +228,9 @@ export class MinecraftBot {
 				if (playerMapObject) {
 					embed.setAuthor({ iconURL: playerMapObject.avatarUrl, name: sanatiseMessage(player) });
 					embed.setColor(`#${playerMapObject.rank?.colorHex}`);
-				}else {
-					embed.setColor('White')
-					embed.setAuthor({name: sanatiseMessage(player)})
+				} else {
+					embed.setColor("White");
+					embed.setAuthor({ name: sanatiseMessage(player) });
 				}
 				await this.sendToDiscord(embed);
 			}
