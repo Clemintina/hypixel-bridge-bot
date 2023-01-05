@@ -63,5 +63,6 @@
 	},
 	"engines": {
 		"node": "18"
-	}
+	},
+	"keywords": ["hypixel","hypixel-discord-bridge","hypixel-guild-bot" ]
 }
