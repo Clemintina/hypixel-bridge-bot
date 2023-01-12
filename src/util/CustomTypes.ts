@@ -20,3 +20,10 @@ export type PlayerMapObject = {
 	uuid: string;
 	rank: PlayerRank | null;
 };
+
+export type ConfigFile = {
+	emojis: {
+		hypixel: string;
+		discord: string;
+	};
+};

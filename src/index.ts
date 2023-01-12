@@ -5,14 +5,14 @@ import dotenv from "dotenv";
 import path from "path";
 import { readdirSync } from "fs";
 import { CommandBase } from "./util/CommandHandler";
-import { sanatiseMessage } from "./util/CommonUtils";
+import { logToConsole, sanatiseMessage } from "./util/CommonUtils";
 
 import "json5/lib/register";
 import axios from "axios";
-import { PlayerDB, PlayerMapObject } from "./util/CustomTypes";
+import { ConfigFile, PlayerDB, PlayerMapObject } from "./util/CustomTypes";
 import { Client, getPlayerRank } from "@zikeji/hypixel";
 
-const config = require("../config.json5");
+const config = require("../config.json5") as ConfigFile;
 
 dotenv.config();
 
@@ -74,7 +74,7 @@ export class MinecraftBot {
 					},
 					(err, info) => {
 						if (err) {
-							console.log(err);
+							logToConsole("error", err);
 							return;
 						}
 						if (info) client.setSocket(info.socket);
@@ -88,7 +88,7 @@ export class MinecraftBot {
 		this.bot.addChatPattern("officer", /Officer > (.+)/, { parse: true, repeat: true });
 
 		if (process.env.DISCORD_TOKEN) {
-			console.log("Logging in to Discord");
+			logToConsole("info", "Logging in to Discord");
 			this.discord.login(process.env.DISCORD_TOKEN);
 			const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
 			const commands = [
@@ -150,9 +150,9 @@ export class MinecraftBot {
 						return option;
 					}),
 			];
-			rest.put(Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID!, process.env.DISCORD_GUILD_ID!), { body: commands }).then(() => console.log("PUT discord commands"));
+			rest.put(Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID!, process.env.DISCORD_GUILD_ID!), { body: commands }).then(() => logToConsole("info", "PUT discord commands"));
 		} else {
-			console.log("No discord token in .env file, Not logging to discord!");
+			logToConsole("warning", "No discord token in .env file, Not logging to discord!");
 		}
 	}
 
@@ -218,7 +218,7 @@ export class MinecraftBot {
 							const playerObject = await new Client(this.key).player.uuid(data.data.player.id);
 							this.getPlayerCache().set(playerUsername, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: getPlayerRank(playerObject) });
 						} catch (e) {
-							console.log(e);
+							logToConsole("error", `Player couldn't be found. ${playerUsername}`);
 						}
 					}
 				}
@@ -253,7 +253,7 @@ export class MinecraftBot {
 
 			if (!message.includes(":")) {
 				// Hypixel Server messages, this is all we need xd
-				console.log(ansiMessage);
+				logToConsole("chat", ansiMessage);
 				this.formatDiscordMessage(message);
 			}
 
@@ -265,7 +265,7 @@ export class MinecraftBot {
 			if (message.includes("Your new API key is")) {
 				this.key = message.replace("Your new API key is", "").trim();
 				setAppConfig({ ...appConfig, hypixelApiKey: this.key });
-				console.log("Key set, bot is ready!");
+				logToConsole("info", "Key set, bot is ready!");
 			}
 		});
 
@@ -361,7 +361,7 @@ export class MinecraftBot {
 							const playerObject = await new Client(this.key).player.uuid(data.data.player.id);
 							this.getPlayerCache().set(playerUsernameLower, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: getPlayerRank(playerObject) });
 						} catch (e) {
-							console.log(e);
+							logToConsole("error", `Player not found. ${playerUsername}`);
 						}
 					}
 				}

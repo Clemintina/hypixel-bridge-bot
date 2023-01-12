@@ -10,6 +10,7 @@
 		"@zikeji/hypixel": "^3.1.1",
 		"axios": "^0.27.2",
 		"bufferutil": "^4.0.7",
+		"chalk": "^4.1.2",
 		"discord.js": "^14.6.0",
 		"dotenv": "^16.0.3",
 		"erlpack": "github:discord/erlpack",
@@ -64,5 +65,9 @@
 	"engines": {
 		"node": "18"
 	},
-	"keywords": ["hypixel","hypixel-discord-bridge","hypixel-guild-bot" ]
+	"keywords": [
+		"hypixel",
+		"hypixel-discord-bridge",
+		"hypixel-guild-bot"
+	]
 }
