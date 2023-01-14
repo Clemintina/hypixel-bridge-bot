@@ -1,8 +1,7 @@
 import { CommandBase, CommandExecute } from "../../util/CommandHandler";
 import { MinecraftBot } from "../../index";
 import { getPlayerUuid, sanatiseMessage, useHypixelApi } from "../../util/CommonUtils";
-import { getPlayerRank } from "@zikeji/hypixel";
-import { EmbedBuilder, HexColorString } from "discord.js";
+import { EmbedBuilder } from "discord.js";
 
 class SkyblockNetworthCommand extends CommandBase {
 	constructor(minecraftBot: MinecraftBot) {
@@ -36,7 +35,7 @@ class SkyblockNetworthCommand extends CommandBase {
 				this.getBotInstance().getMineflayerInstance().chat(formattedString);
 				const embed = new EmbedBuilder().setTitle(`The networth of ${selectedPlayerName}`).setDescription(`${selectedPlayerName}'s networth: ${formattedString}`).setColor("DarkGold").setThumbnail(`https://crafthead.net/avatar/${playerUuid}`);
 				this.getBotInstance().sendToDiscord(embed);
-			}else {
+			} else {
 				this.getBotInstance().getMineflayerInstance().chat(`Couldn't find an active profile by this name.`);
 			}
 		});
