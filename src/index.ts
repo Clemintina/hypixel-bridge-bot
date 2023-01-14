@@ -341,7 +341,7 @@ export class MinecraftBot {
 			const embed = new EmbedBuilder().setColor("Blurple").setTitle(message.author.username).setDescription(message.content);
 			this.sendToDiscord(embed, { isDiscord: true });
 		} else {
-			const discordEmbed = new EmbedBuilder().setDescription(`The bot has been muted. Please stop trying to execute commands! The bot will be unmuted in ${muteMatcher[1]}`).setColor("DarkRed").setTitle("Bot Muted");
+			const discordEmbed = new EmbedBuilder().setDescription(`The bot has been muted.`).setColor("DarkRed").setTitle("Bot Muted");
 			this.sendToDiscord(discordEmbed, { isDiscord: true });
 		}
 	};
