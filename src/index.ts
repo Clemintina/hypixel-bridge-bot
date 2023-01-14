@@ -38,6 +38,7 @@ export class MinecraftBot {
 		intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent],
 	});
 	private key = "";
+	private isBotMuted = false;
 	private commandMap: Map<string, CommandBase> = new Map();
 	private playerCache: Map<string, PlayerMapObject> = new Map<string, PlayerMapObject>();
 
@@ -157,7 +158,7 @@ export class MinecraftBot {
 	}
 
 	public start = async () => {
-		const commandPaths = ["stats", "fun"];
+		const commandPaths = ["stats", "fun", "skyblock"];
 		for (const commandPathRaw of commandPaths) {
 			const commandsPath = path.join(__dirname, "commands", commandPathRaw);
 			const files = readdirSync(commandsPath).filter((f) => f.endsWith(".js") || f.endsWith(".ts"));
@@ -197,12 +198,14 @@ export class MinecraftBot {
 			const commandName = splitMessage[0];
 			const params = splitMessage.slice(1, splitMessage.length);
 
-			if (this.commandMap.has(commandName)) {
+			if (this.commandMap.has(commandName) && !this.isBotMuted) {
 				const commandInstance = this.commandMap.get(commandName);
 				if (commandInstance) {
 					commandInstance.execute({ player, message, params });
 				}
 				return;
+			} else {
+				this.bot.chat(`/immuted ${sanatiseMessage(player).trim()}`);
 			}
 
 			if (process.env.DISCORD_TOKEN && sanatiseMessage(player) != this.bot.username) {
@@ -332,10 +335,15 @@ export class MinecraftBot {
 	};
 
 	private sendToHypixel = async (message: Message) => {
-		this.bot.chat(`${message.author.username}> ${message.content} `);
-		await message.delete();
-		const embed = new EmbedBuilder().setColor("Blurple").setTitle(message.author.username).setDescription(message.content);
-		this.sendToDiscord(embed, { isDiscord: true });
+		if (!this.isBotMuted) {
+			this.bot.chat(`${message.author.username}> ${message.content} `);
+			await message.delete();
+			const embed = new EmbedBuilder().setColor("Blurple").setTitle(message.author.username).setDescription(message.content);
+			this.sendToDiscord(embed, { isDiscord: true });
+		} else {
+			const discordEmbed = new EmbedBuilder().setDescription(`The bot has been muted. Please stop trying to execute commands! The bot will be unmuted in ${muteMatcher[1]}`).setColor("DarkRed").setTitle("Bot Muted");
+			this.sendToDiscord(discordEmbed, { isDiscord: true });
+		}
 	};
 
 	private formatDiscordMessage = async (message: string) => {
@@ -348,6 +356,15 @@ export class MinecraftBot {
 		const playerUsername = splitMessage[0]?.trim();
 		const playerUsernameLower = playerUsername?.toLowerCase();
 		const discordEmbed = new EmbedBuilder().setColor("Blurple");
+
+		// check if the bot is muted
+		const muteMatcher = message.match(/^Your mute will expire in (.+)/im);
+		if (muteMatcher) {
+			discordEmbed.setDescription(`The bot has been muted. Please stop trying to execute commands! The bot will be unmuted in ${muteMatcher[1]}`).setColor("DarkRed").setTitle("Bot Muted");
+			this.sendToDiscord(discordEmbed);
+			this.isBotMuted = true;
+			return;
+		}
 
 		// A switch as it looks nicer than a ton of if-else statements.
 		switch (contentString) {
