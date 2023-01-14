@@ -198,14 +198,16 @@ export class MinecraftBot {
 			const commandName = splitMessage[0];
 			const params = splitMessage.slice(1, splitMessage.length);
 
-			if (this.commandMap.has(commandName) && !this.isBotMuted) {
-				const commandInstance = this.commandMap.get(commandName);
-				if (commandInstance) {
-					commandInstance.execute({ player, message, params });
+			if (this.commandMap.has(commandName)) {
+				if (!this.isBotMuted) {
+					const commandInstance = this.commandMap.get(commandName);
+					if (commandInstance) {
+						commandInstance.execute({ player, message, params });
+					}
+				} else {
+					this.bot.chat(`/immuted ${sanatiseMessage(player).trim()}`);
 				}
 				return;
-			} else {
-				this.bot.chat(`/immuted ${sanatiseMessage(player).trim()}`);
 			}
 
 			if (process.env.DISCORD_TOKEN && sanatiseMessage(player) != this.bot.username) {
