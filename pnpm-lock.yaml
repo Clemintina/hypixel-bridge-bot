@@ -18,6 +18,7 @@ specifiers:
   minecraft-protocol: ^1.36.1
   mineflayer: ^4.6.0
   prettier: ^2.7.1
+  skyhelper-networth: ^1.8.7
   socks: ^2.7.1
   ts-node-dev: ^2.0.0
   typescript: ^4.9.4
@@ -36,6 +37,7 @@ dependencies:
   minecraft-data: 3.20.0
   minecraft-protocol: 1.36.2
   mineflayer: 4.6.0
+  skyhelper-networth: 1.8.7
   socks: 2.7.1
   utf-8-validate: 6.0.0
   zlib-sync: 0.1.7
@@ -489,7 +491,7 @@ packages:
   /axios/0.27.2:
     resolution: {integrity: sha512-t+yRIyySRTp/wua5xEr+z1q60QmLq8ABsS5O9Me1AsE5dfKqgnCFzwiCZZ/cGNd1lq4/7akDWMxdhVlucjmnOQ==}
     dependencies:
-      follow-redirects: 1.15.2_debug@4.3.4
+      follow-redirects: 1.15.2
       form-data: 4.0.0
     transitivePeerDependencies:
       - debug
@@ -946,6 +948,16 @@ packages:
   /flatted/3.2.7:
     resolution: {integrity: sha512-5nqDSxl8nn5BSNxyR3n4I6eDmbolI6WT+QqR547RwxQapgjQBmtktdP+HTBb/a/zLsbzERTONyUB5pefh5TtjQ==}
     dev: true
+
+  /follow-redirects/1.15.2:
+    resolution: {integrity: sha512-VQLG33o04KaQ8uYi2tVNbdrWp1QWxNNea+nmIB4EVM28v0hmP17z7aG1+wAkNzVq4KeXTq3221ye5qTJP91JwA==}
+    engines: {node: '>=4.0'}
+    peerDependencies:
+      debug: '*'
+    peerDependenciesMeta:
+      debug:
+        optional: true
+    dev: false
 
   /follow-redirects/1.15.2_debug@4.3.4:
     resolution: {integrity: sha512-VQLG33o04KaQ8uYi2tVNbdrWp1QWxNNea+nmIB4EVM28v0hmP17z7aG1+wAkNzVq4KeXTq3221ye5qTJP91JwA==}
@@ -1790,6 +1802,15 @@ packages:
     resolution: {integrity: sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==}
     engines: {node: '>=8'}
     dev: true
+
+  /skyhelper-networth/1.8.7:
+    resolution: {integrity: sha512-dpkxdD4yisSNNZ96BsLg6QsQNLoE9+GUdMQCxL50hZx4RHAGWMNQmwkRqrAqt5WhLOeZc2OB423/y+4OdGGFxQ==}
+    dependencies:
+      axios: 0.27.2
+      prismarine-nbt: 2.2.1
+    transitivePeerDependencies:
+      - debug
+    dev: false
 
   /slash/3.0.0:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}

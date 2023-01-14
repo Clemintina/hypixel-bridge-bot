@@ -18,6 +18,7 @@
 		"minecraft-data": "^3.18.0",
 		"minecraft-protocol": "^1.36.1",
 		"mineflayer": "^4.6.0",
+		"skyhelper-networth": "^1.8.7",
 		"socks": "^2.7.1",
 		"utf-8-validate": "^6.0.0",
 		"zlib-sync": "^0.1.7"
