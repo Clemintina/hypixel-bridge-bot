@@ -67,3 +67,5 @@ export const logToConsole = (logType: "info" | "warning" | "error" | "chat", mes
 			break;
 	}
 };
+
+export  const padNumber = (n: number) => ("0" + n).slice(-2);

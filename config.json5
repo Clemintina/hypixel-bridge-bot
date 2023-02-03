@@ -9,5 +9,14 @@
 		hypixel: '<:hypixel:1055748276080611358>',
 		// Discord Emoji in the format of <server:emote id>. Eg: discord: '<:discord:1055748336440844298>'.
 		discord: '<:discord:1055748336440844298>'
+	},
+	// Player welcome back messages, use %player% in lowercase to show the Player name.
+	messages: ['Welcome back %player%'],
+
+	// Guild Requirements discord command
+	guild:{
+		requirements: {
+			bedwars_wins: 5000,
+		}
 	}
 }

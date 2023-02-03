@@ -1,6 +1,6 @@
 import { BotOptions, createBot } from "mineflayer";
 import { SocksClient } from "socks";
-import { Client as Discord, EmbedBuilder, IntentsBitField, Message, REST, Routes, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, Client as Discord, EmbedBuilder, IntentsBitField, Message, REST, Routes, SlashCommandBuilder } from "discord.js";
 import dotenv from "dotenv";
 import path from "path";
 import { readdirSync } from "fs";
@@ -11,6 +11,7 @@ import "json5/lib/register";
 import axios from "axios";
 import { ConfigFile, PlayerDB, PlayerMapObject } from "./util/CustomTypes";
 import { Client, getPlayerRank } from "@zikeji/hypixel";
+import GuildXpCommand from "./discord/GuildXpCommand";
 
 const config = require("../config.json5") as ConfigFile;
 
@@ -150,6 +151,7 @@ export class MinecraftBot {
 						option.setName("player_name").setDescription(`The username of the player you'd like to unmute`).setRequired(true);
 						return option;
 					}),
+				new SlashCommandBuilder().setName("guildxp").setDescription("Shows the guild's players based on requirements")
 			];
 			rest.put(Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID!, process.env.DISCORD_GUILD_ID!), { body: commands }).then(() => logToConsole("info", "PUT discord commands"));
 		} else {
@@ -309,6 +311,8 @@ export class MinecraftBot {
 						} else if (interaction.commandName == "unmute") {
 							await this.bot.chat(`/g unmute ${interaction.options.get("player_name")?.value}`);
 							await interaction.editReply("Command has been executed!");
+						}else if ( interaction.commandName == "guildxp" && typeof interaction.isChatInputCommand() ) {
+							await GuildXpCommand( this.discord, interaction as ChatInputCommandInteraction, this.bot.player.uuid, this.key );
 						}
 					} else {
 						await interaction.reply(`You don't have the required permissions to execute this command!`);
@@ -385,6 +389,8 @@ export class MinecraftBot {
 					}
 				}
 				this.sendToDiscord(discordEmbed);
+				await new Promise(_ => setTimeout(_, 1000));
+				this.bot.chat(`${config.messages[Math.floor(Math.random() * config.messages.length)].replaceAll("%player%",playerUsername)}`)
 				break;
 			case "left.":
 				discordEmbed.setDescription(message).setColor("Red");

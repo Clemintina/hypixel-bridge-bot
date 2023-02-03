@@ -26,4 +26,10 @@ export type ConfigFile = {
 		hypixel: string;
 		discord: string;
 	};
+	messages: Array<string>,
+	guild:{
+		requirements: {
+			bedwars_wins: number,
+		}
+	}
 };
