@@ -41,7 +41,18 @@ const GuildXpCommand = async (client: Client, interaction: ChatInputCommandInter
 				playerStats.push(`${messageColour} - ${player.name} - ${player.gxp[hypixelDateFormat]}`);
 			}
 
-			await interaction.editReply(playerStats.join("\n"));
+			const fullMessage = playerStats.join("\n");
+			if (fullMessage.length > 1995) {
+				const splitMessageOne = fullMessage.substring(0, 1995);
+				const splitMessageTwo = fullMessage.substring(1996, fullMessage.length);
+				if (interaction.channel) {
+					await interaction.channel.send(splitMessageOne);
+					await interaction.channel.send(splitMessageTwo);
+				}
+				await interaction.editReply(`Fetched Guild!`);
+			} else {
+				await interaction.editReply(fullMessage);
+			}
 		}
 	}
 };
