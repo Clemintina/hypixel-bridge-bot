@@ -151,7 +151,7 @@ export class MinecraftBot {
 						option.setName("player_name").setDescription(`The username of the player you'd like to unmute`).setRequired(true);
 						return option;
 					}),
-				new SlashCommandBuilder().setName("guildxp").setDescription("Shows the guild's players based on requirements")
+				new SlashCommandBuilder().setName("guildxp").setDescription("Shows the guild's players based on requirements"),
 			];
 			rest.put(Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID!, process.env.DISCORD_GUILD_ID!), { body: commands }).then(() => logToConsole("info", "PUT discord commands"));
 		} else {
@@ -311,8 +311,8 @@ export class MinecraftBot {
 						} else if (interaction.commandName == "unmute") {
 							await this.bot.chat(`/g unmute ${interaction.options.get("player_name")?.value}`);
 							await interaction.editReply("Command has been executed!");
-						}else if ( interaction.commandName == "guildxp" && typeof interaction.isChatInputCommand() ) {
-							await GuildXpCommand( this.discord, interaction as ChatInputCommandInteraction, this.bot.player.uuid, this.key );
+						} else if (interaction.commandName == "guildxp" && typeof interaction.isChatInputCommand()) {
+							await GuildXpCommand(this.discord, interaction as ChatInputCommandInteraction, this.bot.player.uuid, this.key);
 						}
 					} else {
 						await interaction.reply(`You don't have the required permissions to execute this command!`);
@@ -389,8 +389,8 @@ export class MinecraftBot {
 					}
 				}
 				this.sendToDiscord(discordEmbed);
-				await new Promise(_ => setTimeout(_, 1000));
-				this.bot.chat(`${config.messages[Math.floor(Math.random() * config.messages.length)].replaceAll("%player%",playerUsername)}`)
+				await new Promise((_) => setTimeout(_, 1000));
+				this.bot.chat(`${config.messages[Math.floor(Math.random() * config.messages.length)].replaceAll("%player%", playerUsername)}`);
 				break;
 			case "left.":
 				discordEmbed.setDescription(message).setColor("Red");

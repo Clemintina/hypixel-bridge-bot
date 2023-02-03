@@ -68,4 +68,4 @@ export const logToConsole = (logType: "info" | "warning" | "error" | "chat", mes
 	}
 };
 
-export  const padNumber = (n: number) => ("0" + n).slice(-2);
+export const padNumber = (n: number) => ("0" + n).slice(-2);
