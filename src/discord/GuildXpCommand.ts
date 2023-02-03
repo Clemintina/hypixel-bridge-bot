@@ -41,7 +41,7 @@ const GuildXpCommand = async ( client: Client, interaction: ChatInputCommandInte
 				playerStats.push(`${messageColour} - ${player.name} - ${player.gxp[hypixelDateFormat]}`)
 			}
 
-			await interaction.reply(playerStats.join("\n"));
+			await interaction.editReply(playerStats.join("\n"));
 		}
 	}
 };
