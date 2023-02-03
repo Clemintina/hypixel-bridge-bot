@@ -5,7 +5,7 @@ import { padNumber } from "../util/CommonUtils";
 
 const GuildXpCommand = async ( client: Client, interaction: ChatInputCommandInteraction, playerUuid: string, apiKey: string ): Promise<void> => {
 	if ( interaction.commandName == "guildxp" ) {
-		const config = require("../config.json5") as ConfigFile;
+		const config = require("../../config.json5") as ConfigFile;
 
 		const playerData: Array<{ uuid: string; name: string; gxp: { [name: string]: number }, stats: Components.Schemas.Player }> = [];
 		const hypixelClient = new HypixelClient(apiKey)
