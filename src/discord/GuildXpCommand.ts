@@ -3,14 +3,14 @@ import { Client as HypixelClient, Components } from "@zikeji/hypixel";
 import { ConfigFile } from "../util/CustomTypes";
 import { padNumber } from "../util/CommonUtils";
 
-const GuildXpCommand = async (client: Client, interaction: ChatInputCommandInteraction, playerUuid: string, apiKey: string): Promise<void> => {
+const GuildXpCommand = async (client: Client, interaction: ChatInputCommandInteraction, apiKey: string): Promise<void> => {
 	if (interaction.commandName == "guildxp") {
 		const config = require("../../config.json5") as ConfigFile;
 
 		const playerData: Array<{ uuid: string; name: string; gxp: { [name: string]: number }; stats: Components.Schemas.Player }> = [];
 		const hypixelClient = new HypixelClient(apiKey);
 		// Get Guild members
-		const guild = await hypixelClient.guild.player(playerUuid);
+		const guild = await hypixelClient.guild.id(config.guild.id);
 		await new Promise((resolve) => setTimeout(resolve, 500));
 		if (guild.members) {
 			for (const guildMember of guild.members) {

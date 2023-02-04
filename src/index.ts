@@ -312,7 +312,7 @@ export class MinecraftBot {
 							await this.bot.chat(`/g unmute ${interaction.options.get("player_name")?.value}`);
 							await interaction.editReply("Command has been executed!");
 						} else if (interaction.commandName == "guildxp" && typeof interaction.isChatInputCommand()) {
-							await GuildXpCommand(this.discord, interaction as ChatInputCommandInteraction, this.bot.player.uuid, this.key);
+							await GuildXpCommand(this.discord, interaction as ChatInputCommandInteraction, this.key);
 						}
 					} else {
 						await interaction.reply(`You don't have the required permissions to execute this command!`);

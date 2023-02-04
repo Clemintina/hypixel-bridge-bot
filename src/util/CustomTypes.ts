@@ -28,6 +28,7 @@ export type ConfigFile = {
 	};
 	messages: Array<string>;
 	guild: {
+		id: string
 		requirements: {
 			bedwars_wins: number;
 		};
