@@ -48,19 +48,29 @@ const GuildXpCommand = async (client: Client, interaction: ChatInputCommandInter
 			}
 
 			const fullMessage = playerStats.join("\n");
-			if (fullMessage.length > 1995) {
-				const splitMessageOne = fullMessage.substring(0, 1995);
-				const splitMessageTwo = fullMessage.substring(1996, fullMessage.length);
+			const guildMemberChunkMessage = chunkSubstr(fullMessage, 1990);
+
+			for ( const guildMemberChunk of guildMemberChunkMessage ) {
 				if (interaction.channel) {
-					await interaction.channel.send(splitMessageOne);
-					await interaction.channel.send(splitMessageTwo);
+					await interaction.channel.send(guildMemberChunk);
 				}
-				await interaction.editReply(`Fetched Guild!`);
-			} else {
-				await interaction.editReply(fullMessage);
 			}
+			await interaction.editReply('Fetched the guild.')
 		}
 	}
+};
+
+// Splits the message into multiple chunks
+// https://stackoverflow.com/a/29202760
+const chunkSubstr = ( str: string, size:number) => {
+	const numChunks = Math.ceil(str.length / size)
+	const chunks = new Array<string>(numChunks)
+
+	for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
+		chunks[i] = str.substring(o, size)
+	}
+
+	return chunks
 };
 
 export default GuildXpCommand;
