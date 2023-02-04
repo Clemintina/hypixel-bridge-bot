@@ -60,16 +60,14 @@ const GuildXpCommand = async (client: Client, interaction: ChatInputCommandInter
 };
 
 // Splits the message into multiple chunks
-// https://stackoverflow.com/a/29202760
+// https://stackoverflow.com/a/63716019
 const chunkSubstr = (str: string, size: number) => {
-	const numChunks = Math.ceil(str.length / size);
-	const chunks = new Array<string>(numChunks);
-
-	for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
-		chunks[i] = str.substring(o, size);
+	const length = str.length
+	const chunks = Array(Math.ceil(length / size))
+	for (let i = 0, index = 0; index < length; i++) {
+		chunks[i] = str.slice(index, index += size)
 	}
-
-	return chunks;
+	return chunks
 };
 
 export default GuildXpCommand;
