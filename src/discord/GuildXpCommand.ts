@@ -27,6 +27,12 @@ const GuildXpCommand = async (client: Client, interaction: ChatInputCommandInter
 			const currentDate = new Date();
 			const hypixelDateFormat = `${currentDate.getFullYear()}-${padNumber(currentDate.getMonth() + 1)}-${padNumber(currentDate.getDate())}`;
 
+			playerData.sort((playerA, playerB) => {
+				const firstPlayer = Number(playerA.gxp[hypixelDateFormat]) ?? 0;
+				const secondPlayer = Number(playerB.gxp[hypixelDateFormat]) ?? 0;
+				return firstPlayer > secondPlayer ? 1 : -1;
+			});
+
 			const playerStats: Array<string> = [];
 			for (const player of playerData) {
 				const bedwarsWins = player.stats?.stats?.Bedwars?.wins_bedwars ?? 0;
@@ -38,7 +44,7 @@ const GuildXpCommand = async (client: Client, interaction: ChatInputCommandInter
 				} else {
 					messageColour = ":red_circle:";
 				}
-				playerStats.push(`${messageColour} - ${player.name} - ${player.gxp[hypixelDateFormat]}`);
+				playerStats.push(`${messageColour} - ${player.name} - ${bedwarsWins} - ${player.gxp[hypixelDateFormat]}`);
 			}
 
 			const fullMessage = playerStats.join("\n");
