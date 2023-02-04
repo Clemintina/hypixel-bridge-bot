@@ -29,7 +29,7 @@ const GuildXpCommand = async (client: Client, interaction: ChatInputCommandInter
 			playerData.sort((playerA, playerB) => {
 				const firstPlayer = playerA.gxpTotal;
 				const secondPlayer = playerB.gxpTotal;
-				return firstPlayer > secondPlayer ? 1 : -1;
+				return firstPlayer > secondPlayer ? -1 : 1;
 			});
 
 			const playerStats: Array<string> = [];
@@ -62,12 +62,12 @@ const GuildXpCommand = async (client: Client, interaction: ChatInputCommandInter
 // Splits the message into multiple chunks
 // https://stackoverflow.com/a/63716019
 const chunkSubstr = (str: string, size: number) => {
-	const length = str.length
-	const chunks = Array(Math.ceil(length / size))
+	const length = str.length;
+	const chunks = Array(Math.ceil(length / size));
 	for (let i = 0, index = 0; index < length; i++) {
-		chunks[i] = str.slice(index, index += size)
+		chunks[i] = str.slice(index, (index += size));
 	}
-	return chunks
+	return chunks;
 };
 
 export default GuildXpCommand;
