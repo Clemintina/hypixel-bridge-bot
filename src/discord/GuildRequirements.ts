@@ -18,7 +18,7 @@ const GuildRequirements = async (client: Client, interaction: ChatInputCommandIn
 			playerData = { uuid: hypixelPlayer.uuid, name: hypixelPlayer.displayname, gxpTotal: 0 };
 
 			// Get Guild members
-			const guild = await hypixelClient.getGuildById(config.guild.id);
+			const guild = await hypixelClient.getGuildByPlayer(playerData.uuid);
 			if (guild?.members) {
 				for (const guildMember of guild.members) {
 					if (guildMember.uuid == hypixelPlayer.uuid) {
@@ -48,6 +48,10 @@ const GuildRequirements = async (client: Client, interaction: ChatInputCommandIn
 					value: `Wins: ${duelsWins}\nWLR: ${duelsWLR}`,
 				},
 			);
+
+			if (playerData.gxpTotal != 0) {
+				playerEmbed.addFields({ name: "Guild XP", value: `${playerData.gxpTotal}` });
+			}
 
 			const requirements = config.guild.requirements;
 			if (requirements.bedwars_wins < (hypixelPlayer?.stats?.Bedwars?.wins_bedwars ?? 0) || requirements.duels_wins < duelsWins) {
