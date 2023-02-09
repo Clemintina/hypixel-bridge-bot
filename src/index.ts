@@ -13,6 +13,7 @@ import { ConfigFile, PlayerDB, PlayerMapObject } from "./util/CustomTypes";
 import { getPlayerRank } from "@zikeji/hypixel";
 import GuildXpCommand from "./discord/GuildXpCommand";
 import { SeraphCache } from "./util/SeraphCache";
+import GuildRequirements from "./discord/GuildRequirements";
 
 const config = require("../config.json5") as ConfigFile;
 
@@ -153,6 +154,10 @@ export class MinecraftBot {
 						return option;
 					}),
 				new SlashCommandBuilder().setName("guildxp").setDescription("Shows the guild's players based on requirements"),
+				new SlashCommandBuilder()
+					.setName("reqcheck")
+					.addStringOption((command) => command.setName("name").setDescription("The name of the player you'd like to check.").setRequired(true))
+					.setDescription("Checks if a player meets the requirements"),
 			];
 			rest.put(Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID!, process.env.DISCORD_GUILD_ID!), { body: commands }).then(() => logToConsole("info", "PUT discord commands"));
 		} else {
@@ -313,6 +318,8 @@ export class MinecraftBot {
 							await interaction.editReply("Command has been executed!");
 						} else if (interaction.commandName == "guildxp" && typeof interaction.isChatInputCommand()) {
 							await GuildXpCommand(this.discord, interaction as ChatInputCommandInteraction);
+						} else if (interaction.commandName == "reqcheck" && typeof interaction.isChatInputCommand()) {
+							await GuildRequirements(this.discord, interaction as ChatInputCommandInteraction);
 						}
 					} else {
 						await interaction.reply(`You don't have the required permissions to execute this command!`);
