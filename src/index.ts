@@ -10,8 +10,9 @@ import { logToConsole, sanatiseMessage } from "./util/CommonUtils";
 import "json5/lib/register";
 import axios from "axios";
 import { ConfigFile, PlayerDB, PlayerMapObject } from "./util/CustomTypes";
-import { Client, getPlayerRank } from "@zikeji/hypixel";
+import { getPlayerRank } from "@zikeji/hypixel";
 import GuildXpCommand from "./discord/GuildXpCommand";
+import { SeraphCache } from "./util/SeraphCache";
 
 const config = require("../config.json5") as ConfigFile;
 
@@ -178,7 +179,6 @@ export class MinecraftBot {
 
 	public startBot = () => {
 		this.bot.on("spawn", async () => {
-			this.bot.chat("/api new");
 			await this.bot.waitForTicks(40);
 			this.bot.chat("/chat g");
 			// Force Limbo
@@ -222,8 +222,8 @@ export class MinecraftBot {
 					if (status == 200) {
 						this.getPlayerCache().set(playerUsername, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: null });
 						try {
-							const playerObject = await new Client(this.key).player.uuid(data.data.player.id);
-							this.getPlayerCache().set(playerUsername, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: getPlayerRank(playerObject) });
+							const playerObject = await new SeraphCache().getPlayer(data.data.player.id);
+							if (playerObject) this.getPlayerCache().set(playerUsername, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: getPlayerRank(playerObject) });
 						} catch (e) {
 							logToConsole("error", `Player couldn't be found. ${playerUsername}`);
 						}
@@ -312,7 +312,7 @@ export class MinecraftBot {
 							await this.bot.chat(`/g unmute ${interaction.options.get("player_name")?.value}`);
 							await interaction.editReply("Command has been executed!");
 						} else if (interaction.commandName == "guildxp" && typeof interaction.isChatInputCommand()) {
-							await GuildXpCommand(this.discord, interaction as ChatInputCommandInteraction, this.key);
+							await GuildXpCommand(this.discord, interaction as ChatInputCommandInteraction);
 						}
 					} else {
 						await interaction.reply(`You don't have the required permissions to execute this command!`);
@@ -381,8 +381,8 @@ export class MinecraftBot {
 					if (status == 200) {
 						this.getPlayerCache().set(playerUsernameLower, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: null });
 						try {
-							const playerObject = await new Client(this.key).player.uuid(data.data.player.id);
-							this.getPlayerCache().set(playerUsernameLower, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: getPlayerRank(playerObject) });
+							const playerObject = await new SeraphCache().getPlayer(data.data.player.id);
+							if (playerObject) this.getPlayerCache().set(playerUsernameLower, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: getPlayerRank(playerObject) });
 						} catch (e) {
 							logToConsole("error", `Player not found. ${playerUsername}`);
 						}
