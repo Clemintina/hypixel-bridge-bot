@@ -2,7 +2,6 @@ import { ChatInputCommandInteraction, Client, EmbedBuilder } from "discord.js";
 import { ConfigFile } from "../util/CustomTypes";
 import { SeraphCache } from "../util/SeraphCache";
 import { formatRatio } from "../util/CommonUtils";
-import { Color } from "chalk";
 
 const GuildRequirements = async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 	if (interaction.commandName == "reqcheck") {
