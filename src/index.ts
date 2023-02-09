@@ -406,12 +406,12 @@ export class MinecraftBot {
 			case "joined the guild!":
 				discordEmbed.setDescription(message).setColor("Green");
 				this.sendToDiscord(discordEmbed);
-				this.sendToDiscord(discordEmbed,{isAdmin:true});
+				this.sendToDiscord(discordEmbed, { isAdmin: true });
 				break;
 			case "left the guild!":
 				discordEmbed.setDescription(message).setColor("Red");
 				this.sendToDiscord(discordEmbed);
-				this.sendToDiscord(discordEmbed,{isAdmin:true});
+				this.sendToDiscord(discordEmbed, { isAdmin: true });
 				break;
 			case "is not in your guild!":
 				discordEmbed.setDescription(message).setColor("DarkRed");
@@ -420,7 +420,7 @@ export class MinecraftBot {
 			case contentString.match(/^was kicked from the guild by (.+)!/)?.input:
 				discordEmbed.setDescription(message).setColor("DarkRed");
 				this.sendToDiscord(discordEmbed);
-				this.sendToDiscord(discordEmbed,{isAdmin:true});
+				this.sendToDiscord(discordEmbed, { isAdmin: true });
 				break;
 			case `has requested to join the guild!\nclick here to accept or type /guild accept ${playerUsername?.toLowerCase()}!\n-----------------------------------------------------\n`:
 				discordEmbed.setDescription(message).setColor("Green");
@@ -437,12 +437,12 @@ export class MinecraftBot {
 			case contentString.match(/^was promoted from (.+) to (.+)/i)?.input:
 				discordEmbed.setDescription(message.replaceAll("-", "")).setColor("Green");
 				this.sendToDiscord(discordEmbed);
-				this.sendToDiscord(discordEmbed,{isAdmin:true});
+				this.sendToDiscord(discordEmbed, { isAdmin: true });
 				break;
 			case contentString.match(/^was demoted from (.+) to (.+)/i)?.input:
 				discordEmbed.setDescription(message.replaceAll("-", "")).setColor("DarkRed");
 				this.sendToDiscord(discordEmbed);
-				this.sendToDiscord(discordEmbed,{isAdmin:true});
+				this.sendToDiscord(discordEmbed, { isAdmin: true });
 				break;
 			case "is already in another guild!":
 				discordEmbed.setDescription(message).setColor("Yellow");
@@ -463,12 +463,12 @@ export class MinecraftBot {
 			case contentString.match(/^has muted (.+) for (.+)/)?.input:
 				discordEmbed.setDescription(message).setColor("Green");
 				this.sendToDiscord(discordEmbed);
-				this.sendToDiscord(discordEmbed,{isAdmin:true});
+				this.sendToDiscord(discordEmbed, { isAdmin: true });
 				break;
 			case contentString.match(/^has unmuted (.+)/)?.input:
 				discordEmbed.setDescription(message).setColor("Green");
 				this.sendToDiscord(discordEmbed);
-				this.sendToDiscord(discordEmbed,{isAdmin:true});
+				this.sendToDiscord(discordEmbed, { isAdmin: true });
 				break;
 			default:
 				break;
