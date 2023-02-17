@@ -15,8 +15,22 @@
 
 	// Guild Requirements discord command
 	guild:{
+		id: "",
 		requirements: {
 			bedwars_wins: 5000,
 		}
+	},
+	discord: {
+		permissions: [
+			// Sample permissions
+			// Available permissions are: ["kick", "accept", "promote", "demote", "invite", "mute", "unmute", "viewxp"]
+			// You can use the permission ["all"] to allow for all commands
+			{
+				// Discord role snowflake
+				roleId: '900477389560234054',
+				// Permissions you'd like to use - Example moderator permissions
+				allowList: ['mute',"unmute"]
+			}
+		]
 	}
 }

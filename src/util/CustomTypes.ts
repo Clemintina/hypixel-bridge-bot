@@ -33,4 +33,10 @@ export type ConfigFile = {
 			bedwars_wins: number;
 		};
 	};
+	discord:{
+		permissions: Array< {
+			roleId: string
+			allowList:Array<string>
+		}>
+	}
 };

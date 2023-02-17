@@ -284,38 +284,57 @@ export class MinecraftBot {
 		});
 
 		this.discord.on("interactionCreate", async (interaction) => {
-			if (interaction.member && interaction.isCommand()) {
+			if (interaction.member && interaction.isCommand() && interaction.isChatInputCommand()) {
+				interaction = interaction as ChatInputCommandInteraction;
 				const guild = this.discord.guilds.cache.get(process.env.DISCORD_GUILD_ID!);
 				if (guild) {
 					const member = await guild.members.cache.get(interaction.user.id);
-					if (member && member.roles.cache.has(process.env.DISCORD_ADMIN_ROLE!)) {
-						await interaction.deferReply({ fetchReply: true, ephemeral: true });
-						if (interaction.commandName == "kick") {
-							await this.bot.chat(`/g kick ${interaction.options.get("player_name")?.value} ${interaction.options.get("reason")?.value}`);
-							await interaction.editReply("Command has been executed!");
-						} else if (interaction.commandName == "accept") {
-							await this.bot.chat(`/g accept ${interaction.options.get("player_name")?.value}`);
-							await interaction.editReply("Command has been executed!");
-						} else if (interaction.commandName == "promote") {
-							await this.bot.chat(`/g promote ${interaction.options.get("player_name")?.value}`);
-							await interaction.editReply("Command has been executed!");
-						} else if (interaction.commandName == "demote") {
-							await this.bot.chat(`/g demote ${interaction.options.get("player_name")?.value}`);
-							await interaction.editReply("Command has been executed!");
-						} else if (interaction.commandName == "invite") {
-							await this.bot.chat(`/g invite ${interaction.options.get("player_name")?.value}`);
-							await interaction.editReply("Command has been executed!");
-						} else if (interaction.commandName == "mute") {
-							await this.bot.chat(`/g mute ${interaction.options.get("player_name")?.value} ${interaction.options.get("time_period")?.value}`);
-							await interaction.editReply("Command has been executed!");
-						} else if (interaction.commandName == "unmute") {
-							await this.bot.chat(`/g unmute ${interaction.options.get("player_name")?.value}`);
-							await interaction.editReply("Command has been executed!");
-						} else if (interaction.commandName == "guildxp" && typeof interaction.isChatInputCommand()) {
-							await GuildXpCommand(this.discord, interaction as ChatInputCommandInteraction, this.key);
+					if (member) {
+						const discordRoleIds = config.discord.permissions;
+						const result = discordRoleIds.filter((role) => member.roles.cache.has(role.roleId));
+						if (result.length > 0) {
+							const perms: Array<string> = [];
+							result.forEach((resultArray) =>
+								resultArray.allowList.forEach((perm) => {
+									perms.push(perm.toLowerCase());
+									if (perm.toLowerCase() == "all") {
+										["kick", "accept", "promote", "demote", "invite", "mute", "unmute", "viewxp"].forEach((allPerms) => perms.push(allPerms));
+									}
+								}),
+							);
+
+							await interaction.deferReply({ fetchReply: true, ephemeral: true });
+							if (interaction.commandName == "kick" && perms.includes("kick")) {
+								await this.bot.chat(`/g kick ${interaction.options.get("player_name")?.value} ${interaction.options.get("reason")?.value}`);
+								await interaction.editReply("Command has been executed!");
+							} else if (interaction.commandName == "accept" && perms.includes("accept")) {
+								await this.bot.chat(`/g accept ${interaction.options.get("player_name")?.value}`);
+								await interaction.editReply("Command has been executed!");
+							} else if (interaction.commandName == "promote" && perms.includes("promote")) {
+								await this.bot.chat(`/g promote ${interaction.options.get("player_name")?.value}`);
+								await interaction.editReply("Command has been executed!");
+							} else if (interaction.commandName == "demote" && perms.includes("demote")) {
+								await this.bot.chat(`/g demote ${interaction.options.get("player_name")?.value}`);
+								await interaction.editReply("Command has been executed!");
+							} else if (interaction.commandName == "invite" && perms.includes("invite")) {
+								await this.bot.chat(`/g invite ${interaction.options.get("player_name")?.value}`);
+								await interaction.editReply("Command has been executed!");
+							} else if (interaction.commandName == "mute" && perms.includes("mute")) {
+								await this.bot.chat(`/g mute ${interaction.options.get("player_name")?.value} ${interaction.options.get("time_period")?.value}`);
+								await interaction.editReply("Command has been executed!");
+							} else if (interaction.commandName == "unmute" && perms.includes("unmute")) {
+								await this.bot.chat(`/g unmute ${interaction.options.get("player_name")?.value}`);
+								await interaction.editReply("Command has been executed!");
+							} else if (interaction.commandName == "guildxp" && perms.includes("viewxp")) {
+								await GuildXpCommand(this.discord, interaction as ChatInputCommandInteraction, this.key);
+							} else {
+								await interaction.editReply(`You don't have the required permissions to execute this command! Missing: ${interaction.commandName}`);
+							}
+						} else {
+							await interaction.reply(`You don't have the required permissions to execute this command!`);
 						}
 					} else {
-						await interaction.reply(`You don't have the required permissions to execute this command!`);
+						await interaction.reply(`Can't find the member in question. Discord Error.`);
 					}
 				}
 			}
