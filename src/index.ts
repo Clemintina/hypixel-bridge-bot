@@ -332,7 +332,7 @@ export class MinecraftBot {
 								await interaction.editReply("Command has been executed!");
 							} else if (interaction.commandName == "guildxp" && perms.includes("viewxp")) {
 								await GuildXpCommand(this.discord, interaction as ChatInputCommandInteraction);
-							}else if (interaction.commandName == "reqcheck" && typeof interaction.isChatInputCommand()) {
+							} else if (interaction.commandName == "reqcheck" && perms.includes("reqcheck")) {
 								await GuildRequirements(this.discord, interaction as ChatInputCommandInteraction);
 							} else {
 								await interaction.editReply(`You don't have the required permissions to execute this command! Missing: ${interaction.commandName}`);
