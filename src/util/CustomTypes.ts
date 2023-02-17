@@ -34,10 +34,10 @@ export type ConfigFile = {
 			duels_wins: number;
 		};
 	};
-	discord:{
-		permissions: Array< {
-			roleId: string
-			allowList:Array<string>
-		}>
-	}
+	discord: {
+		permissions: Array<{
+			roleId: string;
+			allowList: Array<string>;
+		}>;
+	};
 };
