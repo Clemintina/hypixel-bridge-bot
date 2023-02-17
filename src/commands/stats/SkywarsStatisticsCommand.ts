@@ -13,7 +13,7 @@ class DuelsStatisticsCommand extends CommandBase {
 			const cleanPlayerName = sanatiseMessage(player).trim();
 
 			const playerUuid = await getPlayerUuid(params.length == 0 ? cleanPlayerName : params[0].trim());
-			const playerStats = await hypixelClient.player.uuid(playerUuid);
+			const playerStats = await hypixelClient.getPlayer(playerUuid);
 
 			if (playerStats) {
 				const skywars = playerStats.stats.SkyWars;

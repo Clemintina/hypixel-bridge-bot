@@ -10,8 +10,10 @@ import { logToConsole, sanatiseMessage } from "./util/CommonUtils";
 import "json5/lib/register";
 import axios from "axios";
 import { ConfigFile, PlayerDB, PlayerMapObject } from "./util/CustomTypes";
-import { Client, getPlayerRank } from "@zikeji/hypixel";
+import { getPlayerRank } from "@zikeji/hypixel";
 import GuildXpCommand from "./discord/GuildXpCommand";
+import { SeraphCache } from "./util/SeraphCache";
+import GuildRequirements from "./discord/GuildRequirements";
 
 const config = require("../config.json5") as ConfigFile;
 
@@ -152,6 +154,10 @@ export class MinecraftBot {
 						return option;
 					}),
 				new SlashCommandBuilder().setName("guildxp").setDescription("Shows the guild's players based on requirements"),
+				new SlashCommandBuilder()
+					.setName("reqcheck")
+					.addStringOption((command) => command.setName("name").setDescription("The name of the player you'd like to check.").setRequired(true))
+					.setDescription("Checks if a player meets the requirements"),
 			];
 			rest.put(Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID!, process.env.DISCORD_GUILD_ID!), { body: commands }).then(() => logToConsole("info", "PUT discord commands"));
 		} else {
@@ -178,7 +184,6 @@ export class MinecraftBot {
 
 	public startBot = () => {
 		this.bot.on("spawn", async () => {
-			this.bot.chat("/api new");
 			await this.bot.waitForTicks(40);
 			this.bot.chat("/chat g");
 			// Force Limbo
@@ -222,8 +227,8 @@ export class MinecraftBot {
 					if (status == 200) {
 						this.getPlayerCache().set(playerUsername, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: null });
 						try {
-							const playerObject = await new Client(this.key).player.uuid(data.data.player.id);
-							this.getPlayerCache().set(playerUsername, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: getPlayerRank(playerObject) });
+							const playerObject = await new SeraphCache().getPlayer(data.data.player.id);
+							if (playerObject) this.getPlayerCache().set(playerUsername, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: getPlayerRank(playerObject) });
 						} catch (e) {
 							logToConsole("error", `Player couldn't be found. ${playerUsername}`);
 						}
@@ -326,7 +331,9 @@ export class MinecraftBot {
 								await this.bot.chat(`/g unmute ${interaction.options.get("player_name")?.value}`);
 								await interaction.editReply("Command has been executed!");
 							} else if (interaction.commandName == "guildxp" && perms.includes("viewxp")) {
-								await GuildXpCommand(this.discord, interaction as ChatInputCommandInteraction, this.key);
+								await GuildXpCommand(this.discord, interaction as ChatInputCommandInteraction);
+							}else if (interaction.commandName == "reqcheck" && typeof interaction.isChatInputCommand()) {
+								await GuildRequirements(this.discord, interaction as ChatInputCommandInteraction);
 							} else {
 								await interaction.editReply(`You don't have the required permissions to execute this command! Missing: ${interaction.commandName}`);
 							}
@@ -400,8 +407,8 @@ export class MinecraftBot {
 					if (status == 200) {
 						this.getPlayerCache().set(playerUsernameLower, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: null });
 						try {
-							const playerObject = await new Client(this.key).player.uuid(data.data.player.id);
-							this.getPlayerCache().set(playerUsernameLower, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: getPlayerRank(playerObject) });
+							const playerObject = await new SeraphCache().getPlayer(data.data.player.id);
+							if (playerObject) this.getPlayerCache().set(playerUsernameLower, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: getPlayerRank(playerObject) });
 						} catch (e) {
 							logToConsole("error", `Player not found. ${playerUsername}`);
 						}
@@ -418,10 +425,12 @@ export class MinecraftBot {
 			case "joined the guild!":
 				discordEmbed.setDescription(message).setColor("Green");
 				this.sendToDiscord(discordEmbed);
+				this.sendToDiscord(discordEmbed, { isAdmin: true });
 				break;
 			case "left the guild!":
 				discordEmbed.setDescription(message).setColor("Red");
 				this.sendToDiscord(discordEmbed);
+				this.sendToDiscord(discordEmbed, { isAdmin: true });
 				break;
 			case "is not in your guild!":
 				discordEmbed.setDescription(message).setColor("DarkRed");
@@ -430,6 +439,7 @@ export class MinecraftBot {
 			case contentString.match(/^was kicked from the guild by (.+)!/)?.input:
 				discordEmbed.setDescription(message).setColor("DarkRed");
 				this.sendToDiscord(discordEmbed);
+				this.sendToDiscord(discordEmbed, { isAdmin: true });
 				break;
 			case `has requested to join the guild!\nclick here to accept or type /guild accept ${playerUsername?.toLowerCase()}!\n-----------------------------------------------------\n`:
 				discordEmbed.setDescription(message).setColor("Green");
@@ -446,10 +456,12 @@ export class MinecraftBot {
 			case contentString.match(/^was promoted from (.+) to (.+)/i)?.input:
 				discordEmbed.setDescription(message.replaceAll("-", "")).setColor("Green");
 				this.sendToDiscord(discordEmbed);
+				this.sendToDiscord(discordEmbed, { isAdmin: true });
 				break;
 			case contentString.match(/^was demoted from (.+) to (.+)/i)?.input:
 				discordEmbed.setDescription(message.replaceAll("-", "")).setColor("DarkRed");
 				this.sendToDiscord(discordEmbed);
+				this.sendToDiscord(discordEmbed, { isAdmin: true });
 				break;
 			case "is already in another guild!":
 				discordEmbed.setDescription(message).setColor("Yellow");
@@ -470,10 +482,12 @@ export class MinecraftBot {
 			case contentString.match(/^has muted (.+) for (.+)/)?.input:
 				discordEmbed.setDescription(message).setColor("Green");
 				this.sendToDiscord(discordEmbed);
+				this.sendToDiscord(discordEmbed, { isAdmin: true });
 				break;
 			case contentString.match(/^has unmuted (.+)/)?.input:
 				discordEmbed.setDescription(message).setColor("Green");
 				this.sendToDiscord(discordEmbed);
+				this.sendToDiscord(discordEmbed, { isAdmin: true });
 				break;
 			default:
 				break;

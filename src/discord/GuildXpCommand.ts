@@ -1,29 +1,31 @@
 import { ChatInputCommandInteraction, Client } from "discord.js";
-import { Client as HypixelClient, Components } from "@zikeji/hypixel";
+import { Components } from "@zikeji/hypixel";
 import { ConfigFile } from "../util/CustomTypes";
+import { SeraphCache } from "../util/SeraphCache";
 
-const GuildXpCommand = async (client: Client, interaction: ChatInputCommandInteraction, apiKey: string): Promise<void> => {
+const GuildXpCommand = async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
 	if (interaction.commandName == "guildxp") {
 		const config = require("../../config.json5") as ConfigFile;
 
 		const playerData: Array<{ uuid: string; name: string; gxp: { [name: string]: number }; gxpTotal: number; stats: Components.Schemas.Player }> = [];
-		const hypixelClient = new HypixelClient(apiKey);
+		const hypixelClient = new SeraphCache();
 		// Get Guild members
-		const guild = await hypixelClient.guild.id(config.guild.id);
-		await new Promise((resolve) => setTimeout(resolve, 500));
-		if (guild.members) {
+		const guild = await hypixelClient.getGuildById(config.guild.id);
+		if (guild?.members) {
 			for (const guildMember of guild.members) {
-				const playerResponse = await hypixelClient.player.uuid(guildMember.uuid);
-				let gxpTotal = 0;
-				Object.keys(guildMember.expHistory).map((gxp) => (gxpTotal += guildMember.expHistory[gxp]));
+				const playerResponse = await hypixelClient.getPlayer(guildMember.uuid);
+				if (playerResponse) {
+					let gxpTotal = 0;
+					Object.keys(guildMember.expHistory).map((gxp) => (gxpTotal += guildMember.expHistory[gxp]));
 
-				playerData.push({
-					uuid: guildMember.uuid,
-					name: playerResponse.displayname ?? "Error",
-					gxp: guildMember.expHistory,
-					gxpTotal,
-					stats: playerResponse,
-				});
+					playerData.push({
+						uuid: guildMember.uuid,
+						name: playerResponse.displayname ?? "Error",
+						gxp: guildMember.expHistory,
+						gxpTotal,
+						stats: playerResponse,
+					});
+				}
 			}
 
 			playerData.sort((playerA, playerB) => {

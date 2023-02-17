@@ -1,7 +1,8 @@
 import axios, { AxiosError } from "axios";
-import { Client, InvalidKeyError } from "@zikeji/hypixel";
-import { getAppConfig, MinecraftBot } from "../index";
+import { InvalidKeyError } from "@zikeji/hypixel";
+import { MinecraftBot } from "../index";
 import chalk from "chalk";
+import { SeraphCache } from "./SeraphCache";
 
 const RANK_REGEX = /\[[a-zA-Z+]+?]/gi;
 
@@ -33,9 +34,9 @@ export const sanatiseMessage = (message: string, customWord?: string) => {
 	return message.replace(RANK_REGEX, customWord ?? "").trim();
 };
 
-export const useHypixelApi = async (botInstance: MinecraftBot, apiCaller: (hypixelClient: Client) => Promise<void>) => {
+export const useHypixelApi = async (botInstance: MinecraftBot, apiCaller: (hypixelClient: SeraphCache) => Promise<void>) => {
 	try {
-		const hypixelClient = new Client(getAppConfig().hypixelApiKey);
+		const hypixelClient = new SeraphCache();
 		return await apiCaller(hypixelClient);
 	} catch (exceptionThrown) {
 		if (exceptionThrown instanceof InvalidKeyError) {

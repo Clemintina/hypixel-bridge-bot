@@ -31,6 +31,7 @@ export type ConfigFile = {
 		id: string;
 		requirements: {
 			bedwars_wins: number;
+			duels_wins: number;
 		};
 	};
 	discord:{

@@ -20,7 +20,7 @@ class SkyblockNetworthCommand extends CommandBase {
 			}
 
 			const selectedPlayerName = params.length == 0 ? cleanPlayerName : params[0].trim();
-			const profile = await hypixelClient.skyblock.profiles.uuid(playerUuid);
+			const profile = await hypixelClient.getSkyblockProfile(playerUuid);
 
 			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 			// @ts-ignore
