@@ -14,6 +14,7 @@ import { getPlayerRank } from "@zikeji/hypixel";
 import GuildXpCommand from "./discord/GuildXpCommand";
 import { SeraphCache } from "./util/SeraphCache";
 import GuildRequirements from "./discord/GuildRequirements";
+import RestartBot from "./discord/RestartBot";
 
 const config = require("../config.json5") as ConfigFile;
 
@@ -154,6 +155,7 @@ export class MinecraftBot {
 						return option;
 					}),
 				new SlashCommandBuilder().setName("guildxp").setDescription("Shows the guild's players based on requirements"),
+				new SlashCommandBuilder().setName("restart").setDescription("Restarts the bot"),
 				new SlashCommandBuilder()
 					.setName("reqcheck")
 					.addStringOption((command) => command.setName("name").setDescription("The name of the player you'd like to check.").setRequired(true))
@@ -334,6 +336,8 @@ export class MinecraftBot {
 								await GuildXpCommand(this.discord, interaction as ChatInputCommandInteraction);
 							} else if (interaction.commandName == "reqcheck" && perms.includes("reqcheck")) {
 								await GuildRequirements(this.discord, interaction as ChatInputCommandInteraction);
+							} else if (interaction.commandName == "restart" && perms.includes("restart")) {
+								await RestartBot(this.discord, interaction as ChatInputCommandInteraction);
 							} else {
 								await interaction.editReply(`You don't have the required permissions to execute this command! Missing: ${interaction.commandName}`);
 							}
