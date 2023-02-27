@@ -15,7 +15,7 @@ class NameAvailableCommand extends CommandBase {
 				this.getBotInstance().getMineflayerInstance().chat("This name is available.");
 			} else if (status == 200) {
 				const cachedAt = new Date(data.data.player.meta.cached_at);
-				this.getBotInstance().getMineflayerInstance().chat(`[${ cachedAt.toLocaleString() }] ${ data.data.player.username } is unavailable.`);
+				this.getBotInstance().getMineflayerInstance().chat(`[${cachedAt.toLocaleString()}] ${data.data.player.username} is unavailable.`);
 			} else {
 				this.getBotInstance().getMineflayerInstance().chat(`There was an error with this request, please try again later. Code: ${status} | Response: ${data}`);
 			}
