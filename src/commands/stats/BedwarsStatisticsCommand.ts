@@ -32,7 +32,7 @@ class BedwarsStatisticsCommand extends CommandBase {
 
 				const formattedString = `${star}\u272B FKDR: ${fkdr} | BBLR: ${bblr} | WLR: ${wlr} | FK: ${formatNumber(finals)} | Wins: ${formatNumber(wins)}`;
 
-				this.send("Bedwars", formattedString, playerStats);
+				this.send("bedwars", formattedString, playerStats);
 			} else {
 				this.getBotInstance().getMineflayerInstance().chat(`The player ${cleanPlayerName} is invalid!`);
 			}

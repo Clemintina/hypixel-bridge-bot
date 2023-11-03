@@ -6,13 +6,27 @@ export class SeraphCache {
 		"User-Agent": "hypixel-bridge-bot",
 	};
 
-	public getPlayer = async (uuid: string) => {
-		const { data, status } = await axios.get(`https://cache.seraph.si/player/${uuid}`, { headers: { ...this.headers } });
-		if (data.success && status == 200) {
-			return data.player as Components.Schemas.Player;
+	public getPlayerByName = async (userName: string)=>{
+		const { data, status } = await axios.get<{ id: string; name: string }>(`https://cache.seraph.si/seraph/username/${userName}`, { headers: { ...this.headers } });
+		if (status == 200) {
+			return data.id;
 		} else {
 			return null;
 		}
+	}
+
+	public getPlayer = async (uuid: string) => {
+		let checkedUuid;
+		if (uuid.length == 32 || uuid.length == 36) {
+			checkedUuid = uuid;
+		} else {
+			const res = await this.getPlayerByName(uuid);
+			if (res == null) return null;
+			checkedUuid = res;
+		}
+
+		const { data, status } = await axios.get(`https://cache.seraph.si/player/${checkedUuid}`, { headers: { ...this.headers } });
+		return data.success && status == 200 ? (data.player as Components.Schemas.Player) : null;
 	};
 
 	public getGuildByPlayer = async (uuid: string) => {

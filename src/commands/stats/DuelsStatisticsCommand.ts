@@ -28,7 +28,7 @@ class DuelsStatisticsCommand extends CommandBase {
 
 					const formattedString = `Kills: ${formatNumber(kills)} | Deaths: ${formatNumber(deaths)} | KDR: ${kdr} |  Wins: ${formatNumber(wins)} | Losses: ${formatNumber(losses)} | WLR: ${wlr}`;
 
-					this.send("Duels", formattedString, playerStats);
+					this.send("duels", formattedString, playerStats);
 				} else {
 					this.getBotInstance().getMineflayerInstance().chat(`This player has no Duels stats!`);
 				}
