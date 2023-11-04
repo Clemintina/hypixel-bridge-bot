@@ -6,14 +6,14 @@ export class SeraphCache {
 		"User-Agent": "hypixel-bridge-bot",
 	};
 
-	public getPlayerByName = async (userName: string)=>{
+	public getPlayerByName = async (userName: string) => {
 		const { data, status } = await axios.get<{ id: string; name: string }>(`https://cache.seraph.si/seraph/username/${userName}`, { headers: { ...this.headers } });
 		if (status == 200) {
 			return data.id;
 		} else {
 			return null;
 		}
-	}
+	};
 
 	public getPlayer = async (uuid: string) => {
 		let checkedUuid;

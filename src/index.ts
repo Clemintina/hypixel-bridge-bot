@@ -20,22 +20,6 @@ const config = require("../config.json5") as ConfigFile;
 
 dotenv.config();
 
-type AppConfig = {
-	hypixelApiKey: string;
-};
-
-let appConfig: AppConfig = {
-	hypixelApiKey: "",
-};
-
-export const getAppConfig = () => {
-	return appConfig;
-};
-
-export const setAppConfig = (config: AppConfig) => {
-	appConfig = config;
-};
-
 export class MinecraftBot {
 	private readonly bot;
 	private discord = new Discord({
@@ -168,7 +152,7 @@ export class MinecraftBot {
 	}
 
 	public start = async () => {
-		const commandPaths = ["stats", "fun", "skyblock"];
+		const commandPaths = ["stats", "fun", "skyblock", "misc"];
 		for (const commandPathRaw of commandPaths) {
 			const commandsPath = path.join(__dirname, "commands", commandPathRaw);
 			const files = readdirSync(commandsPath).filter((f) => f.endsWith(".js") || f.endsWith(".ts"));
@@ -274,12 +258,6 @@ export class MinecraftBot {
 			if (message.includes("invited you to join their guild")) {
 				const guildJoinMessage = message.replaceAll("-", "").split("has invited you to join")[0];
 				this.bot.chat(`/g accept ${sanatiseMessage(guildJoinMessage)}`);
-			}
-
-			if (message.includes("Your new API key is")) {
-				this.key = message.replace("Your new API key is", "").trim();
-				setAppConfig({ ...appConfig, hypixelApiKey: this.key });
-				logToConsole("info", "Key set, bot is ready!");
 			}
 		});
 

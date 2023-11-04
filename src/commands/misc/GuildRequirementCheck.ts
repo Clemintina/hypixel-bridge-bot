@@ -1,16 +1,14 @@
 import { CommandBase, CommandExecute } from "../../util/CommandHandler";
 import { MinecraftBot } from "../../index";
-import axios from "axios";
-import { PlayerDB } from "../../util/CustomTypes";
-import { formatRatio, getPlayerUuid, sanatiseMessage, useHypixelApi } from "../../util/CommonUtils";
+import { formatRatio, sanatiseMessage, useHypixelApi } from "../../util/CommonUtils";
 
 class GuildRequirementCheck extends CommandBase {
 	constructor(minecraftBot: MinecraftBot) {
-		super({ name: "reqcheck", description: "Checks if a player meets the requirements..", minecraftBot });
+		super({ name: "checkreq", description: "Checks if a player meets the requirements..", minecraftBot });
 	}
 
-	public execute = async ({ player, message, params }: CommandExecute) => {
-		await useHypixelApi(this.getBotInstance(), async (hypixelClient) => {
+	public execute = async ({ params }: CommandExecute) => {
+		useHypixelApi(this.getBotInstance(), async (hypixelClient) => {
 			if (params.length != 1) {
 				this.getBotInstance().getMineflayerInstance().chat("Please enter a name.");
 				return;
@@ -19,7 +17,8 @@ class GuildRequirementCheck extends CommandBase {
 			const playerStats = await hypixelClient.getPlayer(cleanPlayerName);
 
 			if (playerStats) {
-				let bedwarsRequirement = false, duelsRequirement = false;
+				let bedwarsRequirement = false,
+					duelsRequirement = false;
 
 				const bedwars = playerStats?.stats?.Bedwars;
 				if (bedwars) {
@@ -30,14 +29,14 @@ class GuildRequirementCheck extends CommandBase {
 
 				const duels = playerStats?.stats?.Duels;
 				if (duels) {
-					const wins = duels['wins'] ? (duels['wins'] as number) : 0;
-					const losses = duels['losses'] ? (duels['losses'] as number) : 0;
+					const wins = duels["wins"] ? (duels["wins"] as number) : 0;
+					const losses = duels["losses"] ? (duels["losses"] as number) : 0;
 					const wlr = formatRatio(wins, losses);
 
 					duelsRequirement = wins > 6000 && Math.round(Number(wlr)) > 2.5;
 				}
 
-				const formattedString = `Bedwars: ${bedwarsRequirement ? '\u2713' : '\u2573'} | Duels: ${duelsRequirement ? '\u2713' : '\u2573'}`;
+				const formattedString = `Bedwars: ${bedwarsRequirement ? "\u2713" : "\u2573"} | Duels: ${duelsRequirement ? "\u2713" : "\u2573"}`;
 				this.send("NONE", formattedString, playerStats);
 			} else {
 				this.getBotInstance().getMineflayerInstance().chat(`The player ${cleanPlayerName} is invalid!`);
@@ -45,3 +44,5 @@ class GuildRequirementCheck extends CommandBase {
 		});
 	};
 }
+
+export default GuildRequirementCheck;

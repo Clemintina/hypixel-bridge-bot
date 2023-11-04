@@ -47,7 +47,11 @@ export abstract class CommandBase {
 
 		this.getBotInstance().getMineflayerInstance().chat(formattedString);
 		if (gamemode != "NONE") {
-			const embed = new EmbedBuilder().setTitle(formattedRank).setDescription(`${gamemode.charAt(0).toUpperCase()+gamemode.slice(1)} statistics for: ${formattedRank} | ${formattedString}`).setColor(playerRankColour).setThumbnail(`https://crafthead.net/avatar/${playerStats.uuid}`);
+			const embed = new EmbedBuilder()
+				.setTitle(formattedRank)
+				.setDescription(`${gamemode.charAt(0).toUpperCase() + gamemode.slice(1)} statistics for: ${formattedRank} | ${formattedString}`)
+				.setColor(playerRankColour)
+				.setThumbnail(`https://crafthead.net/avatar/${playerStats.uuid}`);
 			this.getBotInstance().sendToDiscord(embed);
 		} else {
 			const embed = new EmbedBuilder().setTitle(formattedRank).setDescription(formattedString).setColor(playerRankColour).setThumbnail(`https://crafthead.net/avatar/${playerStats.uuid}`);
