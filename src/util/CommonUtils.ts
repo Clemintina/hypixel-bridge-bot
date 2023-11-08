@@ -21,7 +21,8 @@ export const formatRatio = (num1: number, num2: number) => {
 	const playerValue = num1 / num2;
 	let displayValue: number | string = playerValue;
 	if (!isFinite(playerValue)) displayValue = ~~Number((((0 - 18) / 0) * 100).toFixed(2));
-	if (!Number.isInteger(playerValue)) displayValue = playerValue.toFixed(2);
+	else if (!Number.isInteger(playerValue)) displayValue = playerValue.toFixed(2);
+	else if (Number.isNaN(playerValue)) displayValue = 0;
 	return displayValue.toString();
 };
 
@@ -39,11 +40,7 @@ export const useHypixelApi = async (botInstance: MinecraftBot, apiCaller: (hypix
 		const hypixelClient = new SeraphCache();
 		return await apiCaller(hypixelClient);
 	} catch (exceptionThrown) {
-		if (exceptionThrown instanceof InvalidKeyError) {
-			botInstance.getMineflayerInstance().chat("Invalid API Key, Generating...");
-			await botInstance.getMineflayerInstance().waitForTicks(40);
-			botInstance.getMineflayerInstance().chat("/api new");
-		} else if (exceptionThrown instanceof AxiosError) {
+		if (exceptionThrown instanceof AxiosError) {
 			botInstance.getMineflayerInstance().chat("This player is invalid!  Maybe you typed their name incorrectly.");
 		}
 	}
