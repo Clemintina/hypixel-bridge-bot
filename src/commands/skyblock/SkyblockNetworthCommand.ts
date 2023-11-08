@@ -30,10 +30,10 @@ class SkyblockNetworthCommand extends CommandBase {
 				const bankBalance = profileData?.banking?.balance ?? 0;
 				const { getNetworth } = require("skyhelper-networth");
 				const playerNetworth = await getNetworth(profileData.members[playerUuid], bankBalance);
-				const formattedString = `$${ playerNetworth }`;
+				const formattedString = `$${playerNetworth}`;
 
 				this.getBotInstance().getMineflayerInstance().chat(formattedString);
-				const embed = new EmbedBuilder().setTitle(`The networth of ${ selectedPlayerName }`).setDescription(`${ selectedPlayerName }'s networth: ${ formattedString }`).setColor("DarkGold").setThumbnail(`https://crafthead.net/avatar/${ playerUuid }`);
+				const embed = new EmbedBuilder().setTitle(`The networth of ${selectedPlayerName}`).setDescription(`${selectedPlayerName}'s networth: ${formattedString}`).setColor("DarkGold").setThumbnail(`https://crafthead.net/avatar/${playerUuid}`);
 				this.getBotInstance().sendToDiscord(embed);
 			} else {
 				this.getBotInstance().getMineflayerInstance().chat(`Couldn't find an active profile by this name.`);

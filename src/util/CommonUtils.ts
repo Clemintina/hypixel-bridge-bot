@@ -1,5 +1,4 @@
 import axios, { AxiosError } from "axios";
-import { InvalidKeyError } from "@zikeji/hypixel";
 import { MinecraftBot } from "../index";
 import chalk from "chalk";
 import { SeraphCache } from "./SeraphCache";
@@ -9,7 +8,7 @@ import pino from "pino";
 const RANK_REGEX = /\[[a-zA-Z+]+?]/gi;
 const logger = pino({
 	transport: {
-		target: 'pino-pretty'
+		target: "pino-pretty",
 	},
 });
 
