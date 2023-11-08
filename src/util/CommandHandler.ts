@@ -18,7 +18,7 @@ export type CommandExecute = {
 export abstract class CommandBase {
 	private readonly name;
 	private readonly description;
-	private readonly minecraftInstance;
+	private readonly minecraftInstance: MinecraftBot;
 
 	protected constructor({ name, description, minecraftBot }: CommandRegister) {
 		this.name = name;
