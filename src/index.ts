@@ -25,7 +25,6 @@ export class MinecraftBot {
 	private discord = new Discord({
 		intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent],
 	});
-	private key = "";
 	private isBotMuted = false;
 	private commandMap: Map<string, CommandBase> = new Map();
 	private playerCache: Map<string, PlayerMapObject> = new Map<string, PlayerMapObject>();
@@ -361,6 +360,7 @@ export class MinecraftBot {
 	};
 
 	private formatDiscordMessage = async (message: string) => {
+		const cache = new SeraphCache();
 		let splitMessage = sanatiseMessage(message, "{rank}").split(" ");
 		// Remove's player rank, so the array only contains a name and message content.
 		splitMessage = splitMessage.filter((rankString) => !rankString.includes("{rank}")).filter((emptyString) => emptyString !== "");
@@ -389,8 +389,10 @@ export class MinecraftBot {
 					if (status == 200) {
 						this.getPlayerCache().set(playerUsernameLower, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: null });
 						try {
-							const playerObject = await new SeraphCache().getPlayer(data.data.player.id);
-							if (playerObject) this.getPlayerCache().set(playerUsernameLower, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: getPlayerRank(playerObject) });
+							const playerObject = await cache.getPlayer(data.data.player.id);
+							if (playerObject) {
+								this.getPlayerCache().set(playerUsernameLower, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: getPlayerRank(playerObject) });
+							}
 						} catch (e) {
 							logToConsole("error", `Player not found. ${playerUsername}`);
 						}

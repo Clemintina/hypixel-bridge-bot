@@ -29,6 +29,11 @@ export class SeraphCache {
 		return data.success && status == 200 ? (data.player as Components.Schemas.Player) : null;
 	};
 
+	/**
+	 * Fetches Cached stats from the Seraph API, Viewable within Discord using the bot.
+	 * @param uuid
+	 * @param mode
+	 */
 	public getCachedPlayer = async (uuid: string, mode: "daily" | "weekly" | "monthly") => {
 		let checkedUuid;
 		if (uuid.length == 32 || uuid.length == 36) {

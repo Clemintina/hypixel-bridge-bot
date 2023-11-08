@@ -4,7 +4,14 @@ import { MinecraftBot } from "../index";
 import chalk from "chalk";
 import { SeraphCache } from "./SeraphCache";
 
+import pino from "pino";
+
 const RANK_REGEX = /\[[a-zA-Z+]+?]/gi;
+const logger = pino({
+	transport: {
+		target: 'pino-pretty'
+	},
+});
 
 export const getPlayerUuid = async (username: string) => {
 	if (username.length == 32 || username.length == 36) return username;
@@ -52,16 +59,16 @@ export const logToConsole = (logType: "info" | "warning" | "error" | "chat", mes
 	}
 	switch (logType) {
 		case "info":
-			console.log(chalk.cyan(`${chalk.white(`[`)}INFO${chalk.white(`]`)} ${message}`));
+			logger.info(chalk.cyan(`${chalk.white(`[`)}INFO${chalk.white(`]`)} ${message}`));
 			break;
 		case "warning":
-			console.log(chalk.yellowBright(`${chalk.white(`[`)}WARNING${chalk.white(`]`)} ${message}`));
+			logger.warn(chalk.yellowBright(`${chalk.white(`[`)}WARNING${chalk.white(`]`)} ${message}`));
 			break;
 		case "error":
-			console.log(chalk.redBright(`${chalk.white(`[`)}ERROR${chalk.white(`]`)} ${message}`));
+			logger.error(chalk.redBright(`${chalk.white(`[`)}ERROR${chalk.white(`]`)} ${message}`));
 			break;
 		case "chat":
-			console.log(chalk.blue(`${chalk.white(`[`)}CHAT${chalk.white(`]`)} ${message}`));
+			logger.info(chalk.blue(`${chalk.white(`[`)}CHAT${chalk.white(`]`)} ${message}`));
 			break;
 	}
 };
