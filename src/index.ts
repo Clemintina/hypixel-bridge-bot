@@ -1,4 +1,4 @@
-import { BotOptions, createBot } from "mineflayer";
+import { Bot, BotOptions, createBot } from "mineflayer";
 import { SocksClient } from "socks";
 import { ChatInputCommandInteraction, Client as Discord, EmbedBuilder, IntentsBitField, Message, REST, Routes, SlashCommandBuilder } from "discord.js";
 import dotenv from "dotenv";
@@ -21,7 +21,7 @@ const config = require("../config.json5") as ConfigFile;
 dotenv.config();
 
 export class MinecraftBot {
-	private readonly bot;
+	private readonly bot: Bot;
 	private discord = new Discord({
 		intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent],
 	});
@@ -72,8 +72,6 @@ export class MinecraftBot {
 			};
 		}
 		this.bot = createBot(options);
-		this.bot.addChatPattern("guild", /Guild > (.+)/, { parse: true, repeat: true });
-		this.bot.addChatPattern("officer", /Officer > (.+)/, { parse: true, repeat: true });
 
 		if (process.env.DISCORD_TOKEN) {
 			logToConsole("info", "Logging in to Discord");
@@ -168,6 +166,11 @@ export class MinecraftBot {
 	};
 
 	public startBot = () => {
+		this.bot.once("spawn", () => {
+			this.bot.addChatPattern("guild", /Guild > (.+)/, { parse: true, repeat: true });
+			this.bot.addChatPattern("officer", /Officer > (.+)/, { parse: true, repeat: true });
+		});
+
 		this.bot.on("spawn", async () => {
 			await this.bot.waitForTicks(40);
 			this.bot.chat("/chat g");
