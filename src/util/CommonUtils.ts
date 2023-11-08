@@ -54,9 +54,6 @@ export const useHypixelApi = async (botInstance: MinecraftBot, apiCaller: (hypix
 };
 
 export const logToConsole = (logType: "info" | "warning" | "error" | "chat", message: string | Error) => {
-	if (message instanceof Error) {
-		console.log(chalk.redBright(message.name), chalk.redBright(message.message), message.stack);
-	}
 	switch (logType) {
 		case "info":
 			logger.info(chalk.cyan(`${chalk.white(`[`)}INFO${chalk.white(`]`)} ${message}`));
@@ -65,7 +62,7 @@ export const logToConsole = (logType: "info" | "warning" | "error" | "chat", mes
 			logger.warn(chalk.yellowBright(`${chalk.white(`[`)}WARNING${chalk.white(`]`)} ${message}`));
 			break;
 		case "error":
-			logger.error(chalk.redBright(`${chalk.white(`[`)}ERROR${chalk.white(`]`)} ${message}`));
+			logger.error(message);
 			break;
 		case "chat":
 			logger.info(chalk.blue(`${chalk.white(`[`)}CHAT${chalk.white(`]`)} ${message}`));
