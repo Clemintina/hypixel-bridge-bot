@@ -7,7 +7,7 @@ class GuildRequirementCheck extends CommandBase {
 		super({ name: "checkreq", description: "Checks if a player meets the requirements..", minecraftBot });
 	}
 
-	public execute = async ({ params }: CommandExecute) => {
+	public execute = async ({ params }: CommandExecute) =>
 		useHypixelApi(this.getBotInstance(), async (hypixelClient) => {
 			if (params.length != 1) {
 				this.getBotInstance().getMineflayerInstance().chat("Please enter a name.");
@@ -36,13 +36,12 @@ class GuildRequirementCheck extends CommandBase {
 					duelsRequirement = wins > 6000 && Math.round(Number(wlr)) > 2.5;
 				}
 
-				const formattedString = `Bedwars: ${bedwarsRequirement ? "\u2713" : "\u2573"} | Duels: ${duelsRequirement ? "\u2713" : "\u2573"}`;
+				const formattedString = `Bedwars: ${bedwarsRequirement ? "Y" : "N"} | Duels: ${duelsRequirement ? "Y" : "N"}`;
 				this.send("NONE", formattedString, playerStats);
 			} else {
 				this.getBotInstance().getMineflayerInstance().chat(`The player ${cleanPlayerName} is invalid!`);
 			}
 		});
-	};
 }
 
 export default GuildRequirementCheck;
