@@ -33,7 +33,7 @@ class BedwarsStatisticsCommand extends CommandBase {
 					const bblrDifference = formatRatio((bedwars?.beds_broken_bedwars ?? 0) - (cachedBedwars?.beds_broken_bedwars ?? 0), (bedwars?.beds_lost_bedwars ?? 0) - (cachedBedwars?.beds_lost_bedwars ?? 0));
 					const wlrDifference = formatRatio(winsDifference, (bedwars?.losses_bedwars ?? 0) - (cachedBedwars?.losses_bedwars ?? 0));
 
-					const formattedString = `${star}\u272B FKDR: ${fkdrDifference} | BBLR: ${bblrDifference} | WLR: ${wlrDifference} | FK: ${formatNumber(finalsDifference)} | Wins: ${formatNumber(winsDifference)}`;
+					const formattedString = `${star}\u272B FKDR: ${fkdrDifference} | BBLR: ${bblrDifference} | WLR: ${wlrDifference} | FK: ${formatNumber(finalsDifference)} | Wins: ${formatNumber(winsDifference)} | Reset: ${new Date(cachedStats.resetAt).toDateString()}`;
 
 					this.send("bedwars", formattedString, playerStats);
 				}

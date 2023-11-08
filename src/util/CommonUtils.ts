@@ -23,8 +23,11 @@ export const getPlayerUuid = async (username: string) => {
 	}
 };
 
-export const formatRatio = (num1: number, num2: number) => {
-	const playerValue = num1 / num2;
+export const formatRatio = (num1: number, num2?: number) => {
+	let playerValue = num1;
+	if (num2) {
+		playerValue = num1 / num2;
+	}
 	let displayValue: number | string = playerValue;
 	if (!isFinite(playerValue)) displayValue = ~~Number((((0 - 18) / 0) * 100).toFixed(2));
 	else if (!Number.isInteger(playerValue)) displayValue = playerValue.toFixed(2);

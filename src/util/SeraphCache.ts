@@ -45,7 +45,12 @@ export class SeraphCache {
 		}
 
 		const { data, status } = await axios.get(`https://cache.seraph.si/seraph/${mode}/${checkedUuid}`, { headers: { ...this.headers } });
-		return data.success && status == 200 ? (data.data as Components.Schemas.Player) : null;
+		if (data.success && status == 200) {
+			data.data.resetAt = data.resetsAt;
+			return data.data as Components.Schemas.Player & { resetAt: string };
+		} else {
+			return null;
+		}
 	};
 
 	public getGuildByPlayer = async (uuid: string) => {
