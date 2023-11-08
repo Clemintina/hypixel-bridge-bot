@@ -29,6 +29,20 @@ export class SeraphCache {
 		return data.success && status == 200 ? (data.player as Components.Schemas.Player) : null;
 	};
 
+	public getCachedPlayer = async (uuid: string, mode: "daily" | "weekly" | "monthly") => {
+		let checkedUuid;
+		if (uuid.length == 32 || uuid.length == 36) {
+			checkedUuid = uuid;
+		} else {
+			const res = await this.getPlayerByName(uuid);
+			if (res == null) return null;
+			checkedUuid = res;
+		}
+
+		const { data, status } = await axios.get(`https://cache.seraph.si/seraph/${mode}/${checkedUuid}`, { headers: { ...this.headers } });
+		return data.success && status == 200 ? (data.data as Components.Schemas.Player) : null;
+	};
+
 	public getGuildByPlayer = async (uuid: string) => {
 		const { data, status } = await axios.get(`https://cache.seraph.si/guild/player/${uuid}`, { headers: { ...this.headers } });
 		if (data.success && status == 200) {
