@@ -26,7 +26,7 @@ export class SeraphCache {
 		}
 
 		const { data, status } = await axios.get(`https://cache.seraph.si/player/${checkedUuid}`, { headers: { ...this.headers } });
-		return data.success && status == 200 ? (data.player as Components.Schemas.Player) : null;
+		return data.success && status == 200 ? (data.data as Components.Schemas.Player) : null;
 	};
 
 	/**
