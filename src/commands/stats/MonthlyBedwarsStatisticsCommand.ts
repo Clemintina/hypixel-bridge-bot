@@ -1,5 +1,5 @@
 import { CommandBase, CommandExecute } from "../../util/CommandHandler";
-import { formatNumber, formatRatio, getPlayerUuid, sanatiseMessage, useHypixelApi } from "../../util/CommonUtils";
+import { formatNumber, formatRatio, sanatiseMessage, useHypixelApi } from "../../util/CommonUtils";
 import { MinecraftBot } from "../../index";
 
 class BedwarsStatisticsCommand extends CommandBase {
@@ -10,14 +10,13 @@ class BedwarsStatisticsCommand extends CommandBase {
 	public execute = async ({ player, params }: CommandExecute) =>
 		useHypixelApi(this.getBotInstance(), async (hypixelClient) => {
 			const cleanPlayerName = sanatiseMessage(player).trim();
-			let playerUuid;
+			const playerUuid = await this.getSeraphCache().getPlayerByName(params.length == 0 ? cleanPlayerName : params[0].trim());
 
-			if (this.getBotInstance().getPlayerCache().has(player.toLowerCase()) && params.length == 0) {
-				const cachedPlayer = this.getBotInstance().getPlayerCache().get(player.toLowerCase());
-				if (cachedPlayer) playerUuid = cachedPlayer.uuid;
-			} else {
-				playerUuid = await getPlayerUuid(params.length == 0 ? cleanPlayerName : params[0].trim());
+			if (!playerUuid) {
+				this.getBotInstance().getMineflayerInstance().chat(`Couldn't find a player by this name.`);
+				return;
 			}
+
 			const playerStats = await hypixelClient.getPlayer(playerUuid);
 			const cachedStats = await hypixelClient.getCachedPlayer(playerUuid, "monthly");
 
