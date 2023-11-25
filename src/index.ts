@@ -227,35 +227,11 @@ export class MinecraftBot {
 			if (interaction.member && interaction.isCommand() && interaction.isChatInputCommand()) {
 				interaction = interaction as ChatInputCommandInteraction;
 				await interaction.deferReply({ fetchReply: true, ephemeral: true });
-				const guild = this.discord.guilds.cache.get(config.discord.id);
-				if (guild) {
-					const member = guild.members.cache.get(interaction.user.id);
-					if (member) {
-						const discordRoleIds = config.discord.permissions;
-						const result = discordRoleIds.filter((role) => member.roles.cache.has(role.roleId));
-						if (result.length > 0) {
-							const perms: Array<string> = [];
-							result.forEach((resultArray) =>
-								resultArray.allowList.forEach((perm) => {
-									perms.push(perm.toLowerCase());
-									if (perm.toLowerCase() == "all") {
-										["kick", "accept", "promote", "demote", "invite", "mute", "unmute", "viewxp"].forEach((allPerms) => perms.push(allPerms));
-									}
-								}),
-							);
-
-							const commandName = interaction.commandName;
-							if (commandName && this.discordCommandMap.has(commandName)) {
-								this.discordCommandMap.get(commandName)?.execute({ interaction, discordCommandMap: this.discordCommandMap });
-							} else {
-								await interaction.editReply(`This command doesn't appear to exist.`);
-							}
-						} else {
-							await interaction.reply(`You don't have the required permissions to execute this command! Missing: ${interaction.commandName}`);
-						}
-					} else {
-						await interaction.reply(`Can't find the member in question. Discord Error.`);
-					}
+				const commandName = interaction.commandName;
+				if (commandName && this.discordCommandMap.has(commandName)) {
+					this.discordCommandMap.get(commandName)?.execute({ interaction, discordCommandMap: this.discordCommandMap });
+				} else {
+					await interaction.editReply(`This command doesn't appear to exist.`);
 				}
 			}
 		});
