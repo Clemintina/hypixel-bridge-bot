@@ -30,6 +30,8 @@ export abstract class CommandBase {
 
 	protected getPermissions = () => this.permissionNodes;
 
+	protected getBotInstance = () => this.botInstance;
+
 	protected hasPermissionToExecute = async ({ interaction, discordCommandMap }: CommandExecution) => {
 		const guild = this.discordClient.guilds.cache.get(process.env.DISCORD_GUILD_ID!);
 		if (guild) {
