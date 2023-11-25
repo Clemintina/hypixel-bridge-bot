@@ -19,23 +19,22 @@ This bot is still in development.
    1. Press "New Application"
    2. Name your application
    3. IN General Information, Choose a **unique** name
-   4. Copy your ``Application ID`` and paste it in to the ``.env`` file as the ``DISCORD_CLIENT_ID``
-   5. Press "Bot"
-   6. Press "Add Bot"
-   7. Copy the Token into your ``.env`` file
-   8. Disable "Public Bot"
-   9. Enable the **Message Contents Intent**
-   10. Press "OAuth2"
-   11. Press "URL Generator"
-   12. Under "Scopes", Enable ``Bot`` and ``applications.commands`` (REQUIRED for the bot to be able to add slash commands! )
-   13. Under "Bot Permissions", Enable ``Send Messages`` and ``Read Message History``
-   14. Copy the Generated URL in to your Browser or Discord and invite the Bot
-   15. In Discord, Enable "Developer mode"
-   16. Right click the Server icon and click ``Copy ID`` and paste this in to the ``.env`` file as the ``DISCORD_GUILD_ID``
-   17. Create 2 channels, One for Guild members to use and one for Admins
-   18. Right click each channel and click ``Copy ID`` and paste them in to the ``.env`` file as the ``DISCORD_LOGGING_CHANNEL`` and ``DISCORD_ADMIN_CHANNEL_ID``
-   19. Make a new role ( or existing staff role ) for people who will have permission to Kick, Mute, Promote and Demote people. Copy the ID of this role and place it in to the ``.env`` file
-   20. Start the bot in either development mode or production and ensure it has the message "Logging in to Discord"
+   4. Press "Bot"
+   5. Press "Add Bot"
+   6. Copy the Token into your ``.env`` file under ``DISCORD_TOKEN``
+   7. Disable "Public Bot"
+   8. Enable the **Message Contents Intent**
+   9. Press "OAuth2"
+   10. Press "URL Generator"
+   11. Under "Scopes", Enable ``Bot`` and ``applications.commands`` (REQUIRED for the bot to be able to add slash commands! )
+   12. Under "Bot Permissions", Enable ``Send Messages`` and ``Read Message History``
+   13. Copy the Generated URL in to your Browser or Discord and invite the Bot
+   14. In Discord, Enable "Developer mode"
+   15. Right click the Server icon and click ``Copy ID`` and paste this in to the ``config.json5`` file with the path ``discord.id``
+   16. Create 2 channels, One for Guild members to use and one for Admins
+   17. Right click each channel and click ``Copy ID`` and paste them in to the ``config.json5`` file with the paths ``discord.loggingChannel`` and ``discord.adminChannel``
+   18. Make a new role ( or existing staff role ) for people who will have permission to Kick, Mute, Promote and Demote people. Copy the ID of this role and place it in to the ``discord.permissions`` array.
+   19. Start the bot in either development mode or production and ensure it has the message "Logging in to Discord"
 
 ### Using proxies
 
