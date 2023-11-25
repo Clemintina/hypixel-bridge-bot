@@ -75,6 +75,7 @@ export class MinecraftBot {
 		if (process.env.DISCORD_TOKEN) {
 			logToConsole("info", "Logging in to Discord");
 			this.discord.login(process.env.DISCORD_TOKEN).then(async () => {
+				logToConsole("info", "Fetching commands from files");
 				// Discord Slash command register
 				const discordCommandPaths = readdirSync(path.join(__dirname, "discord"), { withFileTypes: true })
 					.filter((dirent) => dirent.isDirectory())
@@ -86,7 +87,7 @@ export class MinecraftBot {
 					for (const file of files) {
 						const resolvePath = path.join(discordCommandsPath, file);
 						const defaultImport = (await import(resolvePath)).default;
-						const command = new defaultImport(this.discord, this.bot);
+						const command = new defaultImport(this.discord, this);
 						discordCommands.push(command.getCommandBuilder());
 						this.discordCommandMap.set(command.getCommandBuilder().name, command);
 					}
@@ -225,6 +226,7 @@ export class MinecraftBot {
 		this.discord.on("interactionCreate", async (interaction) => {
 			if (interaction.member && interaction.isCommand() && interaction.isChatInputCommand()) {
 				interaction = interaction as ChatInputCommandInteraction;
+				await interaction.deferReply({ fetchReply: true, ephemeral: true });
 				const guild = this.discord.guilds.cache.get(config.discord.id);
 				if (guild) {
 					const member = guild.members.cache.get(interaction.user.id);
@@ -242,40 +244,14 @@ export class MinecraftBot {
 								}),
 							);
 
-							await interaction.deferReply({ fetchReply: true, ephemeral: true });
-							if (interaction.commandName == "kick" && perms.includes("kick")) {
-								this.bot.chat(`/g kick ${interaction.options.get("player_name")?.value} ${interaction.options.get("reason")?.value}`);
-								await interaction.editReply("Command has been executed!");
-							} else if (interaction.commandName == "accept" && perms.includes("accept")) {
-								this.bot.chat(`/g accept ${interaction.options.get("player_name")?.value}`);
-								await interaction.editReply("Command has been executed!");
-							} else if (interaction.commandName == "promote" && perms.includes("promote")) {
-								this.bot.chat(`/g promote ${interaction.options.get("player_name")?.value}`);
-								await interaction.editReply("Command has been executed!");
-							} else if (interaction.commandName == "demote" && perms.includes("demote")) {
-								this.bot.chat(`/g demote ${interaction.options.get("player_name")?.value}`);
-								await interaction.editReply("Command has been executed!");
-							} else if (interaction.commandName == "invite" && perms.includes("invite")) {
-								this.bot.chat(`/g invite ${interaction.options.get("player_name")?.value}`);
-								await interaction.editReply("Command has been executed!");
-							} else if (interaction.commandName == "mute" && perms.includes("mute")) {
-								this.bot.chat(`/g mute ${interaction.options.get("player_name")?.value} ${interaction.options.get("time_period")?.value}`);
-								await interaction.editReply("Command has been executed!");
-							} else if (interaction.commandName == "unmute" && perms.includes("unmute")) {
-								this.bot.chat(`/g unmute ${interaction.options.get("player_name")?.value}`);
-								await interaction.editReply("Command has been executed!");
+							const commandName = interaction.commandName;
+							if (commandName && this.discordCommandMap.has(commandName)) {
+								this.discordCommandMap.get(commandName)?.execute({ interaction, discordCommandMap: this.discordCommandMap });
 							} else {
-								if (interaction.isChatInputCommand()) {
-									const commandName = interaction.commandName;
-									if (commandName && this.discordCommandMap.has(commandName)) {
-										this.discordCommandMap.get(commandName)?.execute({ interaction, discordCommandMap: this.discordCommandMap });
-									} else {
-										await interaction.editReply(`You don't have the required permissions to execute this command! Missing: ${interaction.commandName}`);
-									}
-								}
+								await interaction.editReply(`This command doesn't appear to exist.`);
 							}
 						} else {
-							await interaction.reply(`You don't have the required permissions to execute this command!`);
+							await interaction.reply(`You don't have the required permissions to execute this command! Missing: ${interaction.commandName}`);
 						}
 					} else {
 						await interaction.reply(`Can't find the member in question. Discord Error.`);

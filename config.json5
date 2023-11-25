@@ -26,18 +26,22 @@
 		// Channel to log messages
 		loggingChannel: "1055480391147982969",
 		// Channel to log admin messages
-		adminChannel: "",
-		// Administrator role
-		adminRole: "787929412364533770",
+		adminChannel: "1055480391147982980",
 		permissions: [
 			// Sample permissions
-			// Available permissions are: ["kick", "accept", "promote", "demote", "invite", "mute", "unmute", "viewxp"]
-			// You can use the permission ["all"] to allow for all commands
+			// Available permissions are command names
+			// You can use the permission "all" to allow for all commands
 			{
+				// Sample Moderator role
 				// Discord role snowflake
 				roleId: '900477389560234054',
 				// Permissions you'd like to use - Example moderator permissions
 				allowList: ['mute',"unmute","restart"]
+			},
+			{
+				// Sample Administrator role
+				roleId: '787929412364533770',
+				allowList: ["all"]
 			}
 		]
 	}

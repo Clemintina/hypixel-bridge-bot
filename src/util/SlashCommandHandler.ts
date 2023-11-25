@@ -5,6 +5,7 @@ export type CommandRegister = {
 	commandBuilder: Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">;
 	discordClient: Client<true>;
 	botInstance: MinecraftBot;
+	permissionNodes?: Set<string>;
 };
 
 export type CommandExecution = {
@@ -18,10 +19,15 @@ export abstract class CommandBase {
 	private readonly botInstance: CommandRegister["botInstance"];
 	private readonly permissionNodes = new Set();
 
-	protected constructor({ commandBuilder, discordClient, botInstance }: CommandRegister) {
+	protected constructor({ commandBuilder, discordClient, botInstance, permissionNodes }: CommandRegister) {
 		this.discordClient = discordClient;
 		this.slashCommandBuilder = commandBuilder;
 		this.botInstance = botInstance;
+		if (permissionNodes) {
+			this.permissionNodes = permissionNodes;
+		} else {
+			this.permissionNodes.add(commandBuilder.name);
+		}
 	}
 
 	protected getClient = () => this.discordClient;
@@ -33,7 +39,7 @@ export abstract class CommandBase {
 	protected getBotInstance = () => this.botInstance;
 
 	protected hasPermissionToExecute = async ({ interaction, discordCommandMap }: CommandExecution) => {
-		const guild = this.discordClient.guilds.cache.get(process.env.DISCORD_GUILD_ID!);
+		const guild = this.discordClient.guilds.cache.get(config.discord.id);
 		if (guild) {
 			const member = guild.members.cache.get(interaction.user.id);
 			if (member) {
@@ -44,17 +50,12 @@ export abstract class CommandBase {
 					resultArray.allowList.forEach((perm) => {
 						perms.push(perm.toLowerCase());
 						if (perm.toLowerCase() == "all") {
-							discordCommandMap.forEach((value) => perms.push(value.getCommandBuilder().name));
-							["kick", "accept", "promote", "demote", "invite", "mute", "unmute", "viewxp"].forEach((allPerms) => perms.push(allPerms));
+							discordCommandMap.forEach((value) => perms.push(value.getCommandBuilder().name.toLowerCase()));
 						}
 					}),
 				);
 
-				const valid =
-					perms.filter((value) => {
-						console.log(value.toLowerCase());
-						return this.getPermissions().has(value.toLowerCase());
-					}).length > 0;
+				const valid = perms.filter((value) => this.getPermissions().has(value.toLowerCase())).length > 0;
 				if (valid) {
 					return true;
 				} else {
