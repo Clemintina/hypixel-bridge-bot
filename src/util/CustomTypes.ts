@@ -35,6 +35,10 @@ export type ConfigFile = {
 		};
 	};
 	discord: {
+		id: string;
+		loggingChannel: string;
+		adminChannel: string;
+		adminRole: string;
 		permissions: Array<{
 			roleId: string;
 			allowList: Array<string>;

@@ -217,7 +217,7 @@ export class MinecraftBot {
 
 		this.discord.on("messageCreate", async (message) => {
 			const { bot, id } = message.author;
-			if (message.channel.id == process.env.DISCORD_LOGGING_CHANNEL && !bot && id != this.discord?.user?.id) {
+			if (message.channel.id == config.discord.loggingChannel && !bot && id != this.discord?.user?.id) {
 				this.sendToHypixel(message);
 			}
 		});
@@ -225,7 +225,7 @@ export class MinecraftBot {
 		this.discord.on("interactionCreate", async (interaction) => {
 			if (interaction.member && interaction.isCommand() && interaction.isChatInputCommand()) {
 				interaction = interaction as ChatInputCommandInteraction;
-				const guild = this.discord.guilds.cache.get(process.env.DISCORD_GUILD_ID!);
+				const guild = this.discord.guilds.cache.get(config.discord.id);
 				if (guild) {
 					const member = guild.members.cache.get(interaction.user.id);
 					if (member) {
@@ -244,25 +244,25 @@ export class MinecraftBot {
 
 							await interaction.deferReply({ fetchReply: true, ephemeral: true });
 							if (interaction.commandName == "kick" && perms.includes("kick")) {
-								await this.bot.chat(`/g kick ${interaction.options.get("player_name")?.value} ${interaction.options.get("reason")?.value}`);
+								this.bot.chat(`/g kick ${interaction.options.get("player_name")?.value} ${interaction.options.get("reason")?.value}`);
 								await interaction.editReply("Command has been executed!");
 							} else if (interaction.commandName == "accept" && perms.includes("accept")) {
-								await this.bot.chat(`/g accept ${interaction.options.get("player_name")?.value}`);
+								this.bot.chat(`/g accept ${interaction.options.get("player_name")?.value}`);
 								await interaction.editReply("Command has been executed!");
 							} else if (interaction.commandName == "promote" && perms.includes("promote")) {
-								await this.bot.chat(`/g promote ${interaction.options.get("player_name")?.value}`);
+								this.bot.chat(`/g promote ${interaction.options.get("player_name")?.value}`);
 								await interaction.editReply("Command has been executed!");
 							} else if (interaction.commandName == "demote" && perms.includes("demote")) {
-								await this.bot.chat(`/g demote ${interaction.options.get("player_name")?.value}`);
+								this.bot.chat(`/g demote ${interaction.options.get("player_name")?.value}`);
 								await interaction.editReply("Command has been executed!");
 							} else if (interaction.commandName == "invite" && perms.includes("invite")) {
-								await this.bot.chat(`/g invite ${interaction.options.get("player_name")?.value}`);
+								this.bot.chat(`/g invite ${interaction.options.get("player_name")?.value}`);
 								await interaction.editReply("Command has been executed!");
 							} else if (interaction.commandName == "mute" && perms.includes("mute")) {
-								await this.bot.chat(`/g mute ${interaction.options.get("player_name")?.value} ${interaction.options.get("time_period")?.value}`);
+								this.bot.chat(`/g mute ${interaction.options.get("player_name")?.value} ${interaction.options.get("time_period")?.value}`);
 								await interaction.editReply("Command has been executed!");
 							} else if (interaction.commandName == "unmute" && perms.includes("unmute")) {
-								await this.bot.chat(`/g unmute ${interaction.options.get("player_name")?.value}`);
+								this.bot.chat(`/g unmute ${interaction.options.get("player_name")?.value}`);
 								await interaction.editReply("Command has been executed!");
 							} else {
 								if (interaction.isChatInputCommand()) {
@@ -292,7 +292,7 @@ export class MinecraftBot {
 			isAdmin?: boolean;
 		},
 	) => {
-		const channel = options && options.isAdmin ? await this.discord.channels.cache.get(process.env.DISCORD_ADMIN_CHANNEL_ID ?? "") : await this.discord.channels.cache.get(process.env.DISCORD_LOGGING_CHANNEL ?? "");
+		const channel = options && options.isAdmin ? this.discord.channels.cache.get(config.discord.adminChannel ?? "") : this.discord.channels.cache.get(config.discord.loggingChannel ?? "");
 		if (channel?.isTextBased()) {
 			if (typeof message == "string") {
 				const emoji = options && options.isDiscord ? config.emojis.discord : config.emojis.hypixel;
@@ -308,10 +308,10 @@ export class MinecraftBot {
 			this.bot.chat(`${message.author.username}> ${message.content} `);
 			await message.delete();
 			const embed = new EmbedBuilder().setColor("Blurple").setTitle(message.author.username).setDescription(message.content);
-			this.sendToDiscord(embed, { isDiscord: true });
+			await this.sendToDiscord(embed, { isDiscord: true });
 		} else {
 			const discordEmbed = new EmbedBuilder().setDescription(`The bot has been muted.`).setColor("DarkRed").setTitle("Bot Muted");
-			this.sendToDiscord(discordEmbed, { isDiscord: true });
+			await this.sendToDiscord(discordEmbed, { isDiscord: true });
 		}
 	};
 
@@ -341,20 +341,20 @@ export class MinecraftBot {
 			case "joined.":
 				discordEmbed.setDescription(message).setColor("Green");
 				if (!this.getPlayerCache().has(playerUsernameLower)) {
-					const { data, status } = await axios.get<PlayerDB>(`https://playerdb.co/api/player/minecraft/${playerUsernameLower}`);
-					if (status == 200) {
-						this.getPlayerCache().set(playerUsernameLower, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: null });
+					const playerUuid = await cache.getPlayerByName(playerUsernameLower);
+					if (playerUuid) {
+						this.getPlayerCache().set(playerUsernameLower, { avatarUrl: `https://crafthead.net/avatar/${playerUuid}`, uuid: playerUuid, rank: null });
 						try {
-							const playerObject = await cache.getPlayer(data.data.player.id);
+							const playerObject = await cache.getPlayer(playerUuid);
 							if (playerObject) {
-								this.getPlayerCache().set(playerUsernameLower, { avatarUrl: data.data.player.avatar, uuid: data.data.player.raw_id, rank: getPlayerRank(playerObject) });
+								this.getPlayerCache().set(playerUsernameLower, { avatarUrl: `https://crafthead.net/avatar/${playerUuid}`, uuid: playerUuid, rank: getPlayerRank(playerObject) });
 							}
 						} catch (e) {
 							logToConsole("error", `Player not found. ${playerUsername}`);
 						}
 					}
 				}
-				this.sendToDiscord(discordEmbed);
+				await this.sendToDiscord(discordEmbed);
 				await new Promise((_) => setTimeout(_, 1000));
 				this.bot.chat(`${config.messages[Math.floor(Math.random() * config.messages.length)].replaceAll("%player%", playerUsername)}`);
 				break;

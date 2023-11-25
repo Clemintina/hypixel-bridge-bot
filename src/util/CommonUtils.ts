@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { MinecraftBot } from "../index";
 import chalk from "chalk";
 import { SeraphCache } from "./SeraphCache";
@@ -11,17 +11,6 @@ const logger = pino({
 		target: "pino-pretty",
 	},
 });
-
-export const getPlayerUuid = async (username: string) => {
-	if (username.length == 32 || username.length == 36) return username;
-	const response = await axios.get(`https://playerdb.co/api/player/minecraft/${username}`);
-	const player = response.data;
-	if (player.code == "player.found") {
-		return player.data.player.id;
-	} else {
-		return undefined;
-	}
-};
 
 export const formatRatio = (num1: number, num2?: number) => {
 	let playerValue = num1;
