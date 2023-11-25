@@ -13,14 +13,22 @@
 	// Player welcome back messages, use %player% in lowercase to show the Player name.
 	messages: ['Welcome back %player%'],
 
-	// Guild Requirements discord command
+	// Hypixel Guild Requirements discord command
 	guild:{
-		id: "",
+		id: "5d2380a177ce8492ebe7e222",
 		requirements: {
 			bedwars_wins: 5000,
 		}
 	},
 	discord: {
+		// Guild / Server ID on Discord
+		id: "787918269629726760",
+		// Channel to log messages
+		loggingChannel: "1055480391147982969",
+		// Channel to log admin messages
+		adminChannel: "",
+		// Administrator role
+		adminRole: "787929412364533770",
 		permissions: [
 			// Sample permissions
 			// Available permissions are: ["kick", "accept", "promote", "demote", "invite", "mute", "unmute", "viewxp"]
@@ -29,7 +37,7 @@
 				// Discord role snowflake
 				roleId: '900477389560234054',
 				// Permissions you'd like to use - Example moderator permissions
-				allowList: ['mute',"unmute"]
+				allowList: ['mute',"unmute","restart"]
 			}
 		]
 	}
