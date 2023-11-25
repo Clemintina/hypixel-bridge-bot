@@ -1,24 +1,22 @@
 import { Bot, BotOptions, createBot } from "mineflayer";
 import { SocksClient } from "socks";
-import { ChatInputCommandInteraction, Client as Discord, EmbedBuilder, IntentsBitField, Message, REST, Routes, SlashCommandBuilder } from "discord.js";
-import dotenv from "dotenv";
+import { ChatInputCommandInteraction, Client as Discord, EmbedBuilder, IntentsBitField, Message, REST, Routes } from "discord.js";
+import { config as dotenvConfig } from "dotenv";
 import path from "path";
 import { readdirSync } from "fs";
 import { CommandBase } from "./util/CommandHandler";
+import { CommandBase as SlashCommandBase, CommandRegister } from "./util/SlashCommandHandler";
 import { logToConsole, sanatiseMessage } from "./util/CommonUtils";
 
 import "json5/lib/register";
 import axios from "axios";
 import { ConfigFile, PlayerDB, PlayerMapObject } from "./util/CustomTypes";
 import { getPlayerRank } from "@zikeji/hypixel";
-import GuildXpCommand from "./discord/GuildXpCommand";
 import { SeraphCache } from "./util/SeraphCache";
-import GuildRequirements from "./discord/GuildRequirements";
-import RestartBot from "./discord/RestartBot";
 
-const config = require("../config.json5") as ConfigFile;
+export const config = require("../config.json5") as ConfigFile;
 
-dotenv.config();
+dotenvConfig();
 
 export class MinecraftBot {
 	private readonly bot: Bot;
@@ -28,6 +26,7 @@ export class MinecraftBot {
 	private isBotMuted = false;
 	private commandMap: Map<string, CommandBase> = new Map();
 	private playerCache: Map<string, PlayerMapObject> = new Map<string, PlayerMapObject>();
+	private discordCommandMap = new Map<string, SlashCommandBase>();
 
 	constructor() {
 		const username = process.env.MINECRAFT_EMAIL ?? "";
@@ -75,74 +74,27 @@ export class MinecraftBot {
 
 		if (process.env.DISCORD_TOKEN) {
 			logToConsole("info", "Logging in to Discord");
-			this.discord.login(process.env.DISCORD_TOKEN);
-			const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
-			const commands = [
-				new SlashCommandBuilder()
-					.setName("kick")
-					.setDescription("Kicks a player from the guild")
-					.addStringOption((options) => {
-						options.setName("player_name").setDescription("The name of the player to kick.").setRequired(true);
-						return options;
-					})
-					.addStringOption((options) => {
-						options.setName("reason").setDescription("Reason to kick the player").setRequired(true);
-						return options;
-					}),
-				new SlashCommandBuilder()
-					.setName("accept")
-					.setDescription("Accepts a player into the guild")
-					.addStringOption((option) => {
-						option.setName("player_name").setDescription(`The username of the player you'd like to accept into the guild`).setRequired(true);
-						return option;
-					}),
-				new SlashCommandBuilder()
-					.setName("promote")
-					.setDescription("Promotes a player in the guild")
-					.addStringOption((option) => {
-						option.setName("player_name").setDescription(`The username of the player you'd like to promote`).setRequired(true);
-						return option;
-					}),
-				new SlashCommandBuilder()
-					.setName("demote")
-					.setDescription("Demotes a player in the guild")
-					.addStringOption((option) => {
-						option.setName("player_name").setDescription(`The username of the player you'd like to demote`).setRequired(true);
-						return option;
-					}),
-				new SlashCommandBuilder()
-					.setName("invite")
-					.setDescription("Invites a player to the guild")
-					.addStringOption((option) => {
-						option.setName("player_name").setDescription(`The username of the player you'd like to invite`).setRequired(true);
-						return option;
-					}),
-				new SlashCommandBuilder()
-					.setName("mute")
-					.setDescription("Mutes a player in the guild")
-					.addStringOption((options) => {
-						options.setName("player_name").setDescription("The name of the player to mute.").setRequired(true);
-						return options;
-					})
-					.addStringOption((options) => {
-						options.setName("time_period").setDescription("Time period to mute").setRequired(true);
-						return options;
-					}),
-				new SlashCommandBuilder()
-					.setName("unmute")
-					.setDescription("Unmutes a player in the guild")
-					.addStringOption((option) => {
-						option.setName("player_name").setDescription(`The username of the player you'd like to unmute`).setRequired(true);
-						return option;
-					}),
-				new SlashCommandBuilder().setName("guildxp").setDescription("Shows the guild's players based on requirements"),
-				new SlashCommandBuilder().setName("restart").setDescription("Restarts the bot"),
-				new SlashCommandBuilder()
-					.setName("reqcheck")
-					.addStringOption((command) => command.setName("name").setDescription("The name of the player you'd like to check.").setRequired(true))
-					.setDescription("Checks if a player meets the requirements"),
-			];
-			rest.put(Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID!, process.env.DISCORD_GUILD_ID!), { body: commands }).then(() => logToConsole("info", "PUT discord commands"));
+			this.discord.login(process.env.DISCORD_TOKEN).then(async () => {
+				// Discord Slash command register
+				const discordCommandPaths = readdirSync(path.join(__dirname, "discord"), { withFileTypes: true })
+					.filter((dirent) => dirent.isDirectory())
+					.map((dirent) => dirent.name);
+				const discordCommands: CommandRegister["commandBuilder"][] = [];
+				for (const commandPathRaw of discordCommandPaths) {
+					const discordCommandsPath = path.join(__dirname, "discord", commandPathRaw);
+					const files = readdirSync(discordCommandsPath).filter((f) => f.endsWith(".js") || f.endsWith(".ts"));
+					for (const file of files) {
+						const resolvePath = path.join(discordCommandsPath, file);
+						const defaultImport = (await import(resolvePath)).default;
+						const command = new defaultImport(this.discord, this.bot);
+						discordCommands.push(command.getCommandBuilder());
+						this.discordCommandMap.set(command.getCommandBuilder().name, command);
+					}
+				}
+
+				const rest = new REST().setToken(process.env.DISCORD_TOKEN!);
+				await rest.put(Routes.applicationCommands(this.discord.application!.id), { body: discordCommands });
+			});
 		} else {
 			logToConsole("warning", "No discord token in .env file, Not logging to discord!");
 		}
@@ -275,7 +227,7 @@ export class MinecraftBot {
 				interaction = interaction as ChatInputCommandInteraction;
 				const guild = this.discord.guilds.cache.get(process.env.DISCORD_GUILD_ID!);
 				if (guild) {
-					const member = await guild.members.cache.get(interaction.user.id);
+					const member = guild.members.cache.get(interaction.user.id);
 					if (member) {
 						const discordRoleIds = config.discord.permissions;
 						const result = discordRoleIds.filter((role) => member.roles.cache.has(role.roleId));
@@ -312,14 +264,15 @@ export class MinecraftBot {
 							} else if (interaction.commandName == "unmute" && perms.includes("unmute")) {
 								await this.bot.chat(`/g unmute ${interaction.options.get("player_name")?.value}`);
 								await interaction.editReply("Command has been executed!");
-							} else if (interaction.commandName == "guildxp" && perms.includes("viewxp")) {
-								await GuildXpCommand(this.discord, interaction as ChatInputCommandInteraction);
-							} else if (interaction.commandName == "reqcheck" && perms.includes("reqcheck")) {
-								await GuildRequirements(this.discord, interaction as ChatInputCommandInteraction);
-							} else if (interaction.commandName == "restart" && perms.includes("restart")) {
-								await RestartBot(this.discord, interaction as ChatInputCommandInteraction);
 							} else {
-								await interaction.editReply(`You don't have the required permissions to execute this command! Missing: ${interaction.commandName}`);
+								if (interaction.isChatInputCommand()) {
+									const commandName = interaction.commandName;
+									if (commandName && this.discordCommandMap.has(commandName)) {
+										this.discordCommandMap.get(commandName)?.execute({ interaction, discordCommandMap: this.discordCommandMap });
+									} else {
+										await interaction.editReply(`You don't have the required permissions to execute this command! Missing: ${interaction.commandName}`);
+									}
+								}
 							}
 						} else {
 							await interaction.reply(`You don't have the required permissions to execute this command!`);

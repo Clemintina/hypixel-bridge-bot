@@ -2,6 +2,7 @@ import { MinecraftBot } from "../index";
 import { EmbedBuilder, HexColorString } from "discord.js";
 import { Components, getPlayerRank } from "@zikeji/hypixel";
 import Player = Components.Schemas.Player;
+import { SeraphCache } from "./SeraphCache";
 
 type CommandRegister = {
 	name: string;
@@ -19,24 +20,22 @@ export abstract class CommandBase {
 	private readonly name;
 	private readonly description;
 	private readonly minecraftInstance: MinecraftBot;
+	private readonly seraphCache;
 
 	protected constructor({ name, description, minecraftBot }: CommandRegister) {
 		this.name = name;
 		this.description = description;
 		this.minecraftInstance = minecraftBot;
+		this.seraphCache = new SeraphCache();
 	}
 
-	protected getName = () => {
-		return this.name;
-	};
+	protected getName = () => this.name;
 
-	protected getDescription = () => {
-		return this.description;
-	};
+	protected getDescription = () => this.description;
 
-	protected getBotInstance = () => {
-		return this.minecraftInstance;
-	};
+	protected getBotInstance = () => this.minecraftInstance;
+
+	protected getSeraphCache = () => this.seraphCache;
 
 	abstract execute({ player, message, params }: CommandExecute): void;
 

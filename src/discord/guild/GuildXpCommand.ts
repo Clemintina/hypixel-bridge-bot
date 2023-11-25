@@ -1,14 +1,33 @@
-import { ChatInputCommandInteraction, Client } from "discord.js";
+import { Client, PermissionsBitField, SlashCommandBuilder } from "discord.js";
+import { config, MinecraftBot } from "../../index";
+import { CommandBase, CommandExecution } from "../../util/SlashCommandHandler";
 import { Components } from "@zikeji/hypixel";
-import { ConfigFile } from "../util/CustomTypes";
-import { SeraphCache } from "../util/SeraphCache";
+import { SeraphCache } from "../../util/SeraphCache";
 
-const GuildXpCommand = async (client: Client, interaction: ChatInputCommandInteraction): Promise<void> => {
-	if (interaction.commandName == "guildxp") {
-		const config = require("../../config.json5") as ConfigFile;
+// Splits the message into multiple chunks
+// https://stackoverflow.com/a/63716019
+const chunkSubstr = (str: string, size: number) => {
+	const length = str.length;
+	const chunks = Array(Math.ceil(length / size));
+	for (let i = 0, index = 0; index < length; i++) {
+		chunks[i] = str.slice(index, (index += size));
+	}
+	return chunks;
+};
 
+export default class GuildXpCommand extends CommandBase {
+	constructor(discordClient: Client<true>, botInstance: MinecraftBot) {
+		super({
+			discordClient,
+			botInstance,
+			commandBuilder: new SlashCommandBuilder().setName("viewxp").setDescription("Display guild member xp").setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator),
+		});
+	}
+
+	async execute({ interaction }: CommandExecution) {
 		const playerData: Array<{ uuid: string; name: string; gxp: { [name: string]: number }; gxpTotal: number; stats: Components.Schemas.Player }> = [];
 		const hypixelClient = new SeraphCache();
+
 		// Get Guild members
 		const guild = await hypixelClient.getGuildById(config.guild.id);
 		if (guild?.members) {
@@ -39,7 +58,7 @@ const GuildXpCommand = async (client: Client, interaction: ChatInputCommandInter
 				const bedwarsWins = player.stats?.stats?.Bedwars?.wins_bedwars ?? 0;
 				let messageColour: ":green_circle:" | ":yellow_circle:" | ":red_circle:";
 				if (bedwarsWins > config.guild.requirements.bedwars_wins) {
-					messageColour = ":green_circle:";
+					continue;
 				} else if (bedwarsWins > config.guild.requirements.bedwars_wins - 500) {
 					messageColour = ":yellow_circle:";
 				} else {
@@ -59,17 +78,4 @@ const GuildXpCommand = async (client: Client, interaction: ChatInputCommandInter
 			await interaction.editReply("Fetched the guild.");
 		}
 	}
-};
-
-// Splits the message into multiple chunks
-// https://stackoverflow.com/a/63716019
-const chunkSubstr = (str: string, size: number) => {
-	const length = str.length;
-	const chunks = Array(Math.ceil(length / size));
-	for (let i = 0, index = 0; index < length; i++) {
-		chunks[i] = str.slice(index, (index += size));
-	}
-	return chunks;
-};
-
-export default GuildXpCommand;
+}
